@@ -111,8 +111,8 @@ def main(options):
             messagedata['data'].append( get_process_data_dict(processName) )
 
         # Sending messages
-        msg = "%s" % json.dumps(messagedata)
-        print msg
+        msg = "%s %s" % ("process_info", json.dumps(messagedata))
+        print "=>", msg
         publisher.send(msg)
         messagedata['data'] = []
 

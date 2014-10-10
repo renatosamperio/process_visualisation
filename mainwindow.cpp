@@ -24,22 +24,11 @@ MainWindow::MainWindow(QWidget *parent) :
   iTickStep= 100;
   iWindowStep = 1000;
 
-  // Preparing ZMQ subscriber
-  cout << " + Preparing ZMQ subscriber"<<endl;
-  int iResult = 0;
-  int iZMQ_rcvhwm = 0;
-  m_zcontext = zmq_ctx_new();
-  string sSubEndpoint = "tcp://127.0.0.1:5563";
-  m_zcontext = zmq_ctx_new ();
-  m_zsocket = zmq_socket (m_zcontext, ZMQ_SUB);
-  iResult = zmq_setsockopt(m_zsocket, ZMQ_RCVHWM, &iZMQ_rcvhwm, sizeof(iZMQ_rcvhwm));
-  iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, "", 0);
-  zmq_connect (m_zsocket, sSubEndpoint.c_str() );
-
   const int width = ( QApplication::desktop()->width()-10 ) /2;
   const int height =(  QApplication::desktop()->height()-100)/ 4;
 //  std::cout << "*** ("<< height << ", "<< width << ")"<<std::endl;
 
+  cout << " + Setting up QT window properties"<<endl;
   ui->setupUi(this);
   setGeometry(400, 250, width, height);
 
@@ -48,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent) :
   statusBar()->clearMessage();
 
   move(20, 30);
-
   ui->customPlot->replot();
 
 }
@@ -124,9 +112,10 @@ void MainWindow::realtimeDataSlot()
 //    string rpl = strip(std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)) );
 //    zmq_msg_close(&msg);
 
-////    string rpl = isDataAvailable();
-////    ListProcessInfo process_data;
-////    process_data.decapsulate(rpl);
+//    string message = isDataAvailable();
+//    cout << "*** ["<< processInfo->name <<"]: "<< message << endl;
+//    ListProcessInfo process_data;
+//    process_data.decapsulate(message);
 ////    cout << "*** processSize: "<< process_data.processSize << endl;
 ////    std::cout << "memory_vms_info:"  << process_data.lProcesses[0].memory_vms_info << std::endl;
 ////    std::cout << "memory_rss_info:"  << process_data.lProcesses[0].memory_rss_info << std::endl;
@@ -211,8 +200,25 @@ void MainWindow::bracketDataSlot()
   }
 }
 
-void MainWindow::setupGroup(GroupWindows *grpPlots){
-//  groupPlots = grpPlots(new GroupWindows);
+void MainWindow::setupProcessInfo( std::shared_ptr<ProcessInfo> procInfo )
+//void MainWindow::setupGroup(GroupWindows *grpPlots)
+{
+  cout << " + Assigning process information"<<endl;
+  processInfo = procInfo;
+  cout << "   + Process name: "<<processInfo->name <<endl;
+
+  // Preparing ZMQ subscriber
+  cout << "   + Preparing ZMQ subscriber for [processInfo->name]"<<endl;
+//  int iResult = 0;
+//  int iZMQ_rcvhwm = 0;
+//  m_zcontext = zmq_ctx_new();
+//  string sSubEndpoint = "tcp://127.0.0.1:5563";
+//  m_zcontext = zmq_ctx_new ();
+//  m_zsocket = zmq_socket (m_zcontext, ZMQ_SUB);
+//  iResult = zmq_setsockopt(m_zsocket, ZMQ_RCVHWM, &iZMQ_rcvhwm, sizeof(iZMQ_rcvhwm));
+//  iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, processInfo->name.c_str(), 0);
+//  zmq_connect (m_zsocket, sSubEndpoint.c_str() );
+
 }
 
 std::string MainWindow::isDataAvailable(){
@@ -224,7 +230,8 @@ std::string MainWindow::isDataAvailable(){
 //  assert (rcr != -1);
 //  string rpl = strip(std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)) );
 //  zmq_msg_close(&msg);
-//  return rpl;
+//  string message_content = rpl.substr(rpl.find("{"));
+//  return message_content;
 return std::string("");
 }
 

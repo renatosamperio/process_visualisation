@@ -24,7 +24,7 @@ GroupWindows::GroupWindows(std::string endPoint):
   m_zcontext = zmq_ctx_new ();
   m_zsocket = zmq_socket (m_zcontext, ZMQ_SUB);
   iResult = zmq_setsockopt(m_zsocket, ZMQ_RCVHWM, &iZMQ_rcvhwm, sizeof(iZMQ_rcvhwm));
-  iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, "", 0);
+  iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, "process_info", 0);
   zmq_connect (m_zsocket, sSubEndpoint.c_str() );
 }
 
@@ -37,10 +37,16 @@ void GroupWindows::isDataAvailable(){
   assert (rcr != -1);
   string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
   zmq_msg_close(&msg);
-  lProcesses->decapsulate(rpl);
+  string message_content = rpl.substr(rpl.find("{"));
+//  cout << "*** Parsing message: ["<< message_content <<"]"<<endl;
+  lProcesses->decapsulate(message_content);
 }
 
 GroupWindows::~GroupWindows()
 {
   // Delete context and socket !!!
+  int iResult = zmq_close(m_zsocket);
+  iResult = zmq_ctx_destroy(m_zcontext);
+
+  lProcesses.reset();
 }

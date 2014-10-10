@@ -30,7 +30,7 @@ public:
 
   void setupRealtimeDataDemo(QCustomPlot *customPlot);
   void setupPlayground(QCustomPlot *customPlot);
-  void setupGroup(GroupWindows *groupPlots);
+  void setupProcessInfo(std::shared_ptr<ProcessInfo> procInfo);
 
   std::string isDataAvailable();
 
@@ -52,7 +52,7 @@ private:
   int iTickStep;
   int iWindowStep;
 
-  std::shared_ptr<GroupWindows> groupPlots;
+  std::shared_ptr<ProcessInfo> processInfo;
 
 };
 

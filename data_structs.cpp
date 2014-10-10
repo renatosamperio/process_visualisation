@@ -39,26 +39,28 @@ void ListProcessInfo::decapsulate(std::string &message){
   bpt::ptree pt;
   bpt::read_json(ss, pt);
 
+//  std::cout << "--- message [" << strip(message)<<"]"<<std::endl;
   BOOST_FOREACH(const bpt::ptree::value_type& child, pt.get_child("data") ) {
-//      std::cout << "---" << std::endl;
-    ProcessInfo pData;
-    pData.name              = child.second.get<std::string>("name");
-    pData.username          = child.second.get<std::string>("username");
-    pData.status            = child.second.get<std::string>("status");
-    pData.cpu_times         = child.second.get<std::string>("cpu_times");
-    pData.memory_vms_label  = child.second.get<std::string>("memory_vms_label");
-    pData.memory_rss_label  = child.second.get<std::string>("memory_rss_label");
+    std::shared_ptr<ProcessInfo> pData(new ProcessInfo);
+    pData->name              = child.second.get<std::string>("name");
+    pData->username          = child.second.get<std::string>("username");
+    pData->status            = child.second.get<std::string>("status");
+    pData->cpu_times         = child.second.get<std::string>("cpu_times");
+    pData->memory_vms_label  = child.second.get<std::string>("memory_vms_label");
+    pData->memory_rss_label  = child.second.get<std::string>("memory_rss_label");
 
-    pData.memory_vms_info   = child.second.get<int>("memory_vms_info");
-    pData.memory_rss_info   = child.second.get<int>("memory_rss_info");
-    pData.nice              = child.second.get<int>("nice");
+    pData->memory_vms_info   = child.second.get<int>("memory_vms_info");
+    pData->memory_rss_info   = child.second.get<int>("memory_rss_info");
+    pData->nice              = child.second.get<int>("nice");
 
-    pData.cpu_percent       = child.second.get<double>("cpu_percent");
-    pData.memory_percent    = child.second.get<double>("memory_percent");
+    pData->cpu_percent       = child.second.get<double>("cpu_percent");
+    pData->memory_percent    = child.second.get<double>("memory_percent");
 
-    lProcesses.push_back (pData);
+//    cout << "  *** name: " << pData->name << endl;
+    lProcesses.push_back (  std::move(pData) );
   }
   processSize = lProcesses.size();
+//  cout << "  *** processSize: " << processSize << endl;
 }
 
 std::string strip(const std::string &s, const std::string &chars) {

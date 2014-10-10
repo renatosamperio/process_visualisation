@@ -1,17 +1,20 @@
 #ifndef _DATA_STRUCTS_H_
 #define _DATA_STRUCTS_H_
 
-#include <QMainWindow>
-#include <QTimer>
-#include "qcustomplot.h"
 #include <iostream>
 #include <sstream>
+#include <memory>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
+#include <QMainWindow>
+#include <QTimer>
 #include <zmq.hpp>
+
 #include "zhelpers.h"
+#include "qcustomplot.h"
 
 class ProcessInfo{
   public:
@@ -37,11 +40,12 @@ class ListProcessInfo{
     void decapsulate(std::string &message);
 
     inline int getProcessSize(){return processSize;}
-    inline std::vector<ProcessInfo>& getLProcesses(){return lProcesses;};
+    inline std::vector<std::shared_ptr<ProcessInfo> > getLProcesses(){return lProcesses;};
 
   private:
     int processSize;
-    std::vector<ProcessInfo> lProcesses;
+//    std::vector<ProcessInfo> lProcesses;
+    std::vector< std::shared_ptr<ProcessInfo> > lProcesses;
 };
 
 
