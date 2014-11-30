@@ -40,9 +40,12 @@ class ListProcessInfo{
     void decapsulate(std::string &message);
 
     inline int getProcessSize(){return processSize;}
-    inline std::vector<std::shared_ptr<ProcessInfo> > getLProcesses(){return lProcesses;};
+    inline std::vector<std::shared_ptr<ProcessInfo> > getLProcesses()
+      {
+	return lProcesses;
+      };
 
-  private:
+private:
     int processSize;
 //    std::vector<ProcessInfo> lProcesses;
     std::vector< std::shared_ptr<ProcessInfo> > lProcesses;

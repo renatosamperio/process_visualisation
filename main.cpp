@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   groupPlots->isDataAvailable();
   int processSize = groupPlots->getListProcess()->getProcessSize();
   cout << "+ Number of monitoring processes: "<< processSize << endl;
-  groupPlots.reset();
+//   groupPlots.reset();
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QApplication::setGraphicsSystem("raster");
@@ -26,11 +26,11 @@ int main(int argc, char *argv[])
 
   std::vector<std::shared_ptr<MainWindow>> my_plots;
   for (int i=0; i<processSize; i++){
-//    cout << "*** name: "<<groupPlots->getListProcess()->getLProcesses()[i]->name <<endl;
-    std::shared_ptr<MainWindow> tmp(new MainWindow);
+   std::shared_ptr<MainWindow> tmp(new MainWindow);
     my_plots.push_back( std::move(tmp) );
 //    my_plots[i]->setupProcessInfo( groupPlots->getListProcess()->getLProcesses()[i] );
-    my_plots[i]->setupProcessInfo( processInfo );
+//     my_plots[i]->setupProcessInfo( processInfo );
+    my_plots[i]->setupObserver( groupPlots );
     my_plots[i]->show();
   }
 

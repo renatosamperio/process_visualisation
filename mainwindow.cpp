@@ -46,7 +46,7 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
 #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
   QMessageBox::critical(this, "", "You're using Qt < 4.7, the realtime data demo needs functions that are available with Qt 4.7 to work properly");
 #endif
-  demoName = "Real Time Data Demo";
+  demoName = "Real time process data analyser";
 
   customPlot->addGraph(); // blue line
   customPlot->graph(0)->setPen(QPen(Qt::blue));
@@ -103,6 +103,17 @@ void MainWindow::realtimeDataSlot()
 
     double value0 = 0.0;
     double value1 = 0.0;
+    observer->isDataAvailable();
+    
+    std::shared_ptr<ListProcessInfo> list = observer->getListProcess();
+    std::vector<std::shared_ptr<ProcessInfo> > listProcs = list->getLProcesses();
+    int iSize = list->getProcessSize();
+    for (int i=0; i<iSize; i++){
+      value0 = listProcs[i]->memory_vms_info;
+      value1 = value0-tmpValue;
+      cout << "*** name: "<<listProcs[i]->name<<endl;
+      cout << "*** memory_vms_info: "<<value0<<endl;
+    }
     // Obtaining ZMQ values
 //    zmq_msg_t msg;
 //    int rc = zmq_msg_init(&msg);
@@ -116,13 +127,13 @@ void MainWindow::realtimeDataSlot()
 //    cout << "*** ["<< processInfo->name <<"]: "<< message << endl;
 //    ListProcessInfo process_data;
 //    process_data.decapsulate(message);
-////    cout << "*** processSize: "<< process_data.processSize << endl;
-////    std::cout << "memory_vms_info:"  << process_data.lProcesses[0].memory_vms_info << std::endl;
-////    std::cout << "memory_rss_info:"  << process_data.lProcesses[0].memory_rss_info << std::endl;
-////    value0 = process_data.lProcesses[0].memory_vms_info;
-////    value1 = value0-tmpValue;
-////    std::cout << "memory_vms_info:"  << value0 << std::endl;
-////    std::cout << "derivative:"  << value1 << std::endl;
+//    cout << "*** processSize: "<< process_data.processSize << endl;
+//    std::cout << "memory_vms_info:"  << process_data.lProcesses[0].memory_vms_info << std::endl;
+//    std::cout << "memory_rss_info:"  << process_data.lProcesses[0].memory_rss_info << std::endl;
+//    value0 = process_data.lProcesses[0].memory_vms_info;
+//    value1 = value0-tmpValue;
+//    std::cout << "memory_vms_info:"  << value0 << std::endl;
+//    std::cout << "derivative:"  << value1 << std::endl;
 //    cout << "RECV: "  << newValue<< " -> "<< value1 << endl;
 
     ui->customPlot->graph(0)->addData(key, value0);
@@ -200,25 +211,18 @@ void MainWindow::bracketDataSlot()
   }
 }
 
-void MainWindow::setupProcessInfo( std::shared_ptr<ProcessInfo> procInfo )
+// void MainWindow::setupProcessInfo( std::shared_ptr<ProcessInfo> procInfo )
+void MainWindow::setupObserver( std::shared_ptr<GroupWindows> & obs )
 //void MainWindow::setupGroup(GroupWindows *grpPlots)
 {
   cout << " + Assigning process information"<<endl;
-  processInfo = procInfo;
-  cout << "   + Process name: "<<processInfo->name <<endl;
-
-  // Preparing ZMQ subscriber
-  cout << "   + Preparing ZMQ subscriber for [processInfo->name]"<<endl;
-//  int iResult = 0;
-//  int iZMQ_rcvhwm = 0;
-//  m_zcontext = zmq_ctx_new();
-//  string sSubEndpoint = "tcp://127.0.0.1:5563";
-//  m_zcontext = zmq_ctx_new ();
-//  m_zsocket = zmq_socket (m_zcontext, ZMQ_SUB);
-//  iResult = zmq_setsockopt(m_zsocket, ZMQ_RCVHWM, &iZMQ_rcvhwm, sizeof(iZMQ_rcvhwm));
-//  iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, processInfo->name.c_str(), 0);
-//  zmq_connect (m_zsocket, sSubEndpoint.c_str() );
-
+  observer = obs;
+//   std::shared_ptr<ListProcessInfo> list = observer->getListProcess();
+//   std::vector<std::shared_ptr<ProcessInfo> > listProcs = list->getLProcesses();
+//   int iSize = list->getProcessSize();
+//   for (int i=0; i<iSize; i++){
+//     cout << "*** name: "<<listProcs[i]->name<<endl;
+//   }
 }
 
 std::string MainWindow::isDataAvailable(){

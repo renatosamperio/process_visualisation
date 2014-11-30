@@ -31,14 +31,19 @@ GroupWindows::GroupWindows(std::string endPoint):
 void GroupWindows::isDataAvailable(){
   // Obtaining ZMQ values
   zmq_msg_t msg;
+//  cout << "*** Initialising socket with message..."<< endl;
   int rc = zmq_msg_init(&msg);
   assert(rc == 0);
+//  cout << "*** Receiving message..."<< endl;
   int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
   assert (rcr != -1);
+//  cout << "*** Casting message in a string..."<< endl;
   string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
   zmq_msg_close(&msg);
-  string message_content = rpl.substr(rpl.find("{"));
-//  cout << "*** Parsing message: ["<< message_content <<"]"<<endl;
+//  cout << "*** 1Closing message -" << rpl <<"-..."<< endl;
+  string message_content = rpl.substr(rpl.find("{"), rpl.size());
+//  cout << "*** 2Closing message [" << message_content <<"]..."<< endl;
+//  cout << "*** Parsing message: -"<< message_content <<"-"<<endl;
   lProcesses->decapsulate(message_content);
 }
 

@@ -38,6 +38,7 @@ void ListProcessInfo::decapsulate(std::string &message){
   std::stringstream ss(message);
   bpt::ptree pt;
   bpt::read_json(ss, pt);
+  lProcesses.clear();
 
 //  std::cout << "--- message [" << strip(message)<<"]"<<std::endl;
   BOOST_FOREACH(const bpt::ptree::value_type& child, pt.get_child("data") ) {
