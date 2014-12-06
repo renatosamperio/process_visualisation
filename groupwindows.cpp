@@ -42,15 +42,33 @@ void GroupWindows::isDataAvailable(){
   zmq_msg_close(&msg);
 //  cout << "*** 1Closing message -" << rpl <<"-..."<< endl;
   string message_content = rpl.substr(rpl.find("{"), rpl.size());
-//  cout << "*** 2Closing message [" << message_content <<"]..."<< endl;
+ cout << "-- -- -- -- Parsing message [" << message_content.size() <<"] :"<< message_content << endl;
 //  cout << "*** Parsing message: -"<< message_content <<"-"<<endl;
-  lProcesses->decapsulate(message_content);
+  try
+  {
+    lProcesses->decapsulate(message_content);
+  }
+  
+  catch(const boost::property_tree::ptree_bad_data &e)
+  {
+    cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
+  }
+  
+  catch(const boost::property_tree::ptree_bad_path &e)
+  {
+    cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
+  }
+  catch(const boost::property_tree::ptree_error &e)
+  {
+    cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
+  }
 }
 
 GroupWindows::~GroupWindows()
 {
   // Delete context and socket !!!
   int iResult = zmq_close(m_zsocket);
+  (void) iResult;
   iResult = zmq_ctx_destroy(m_zcontext);
 
   lProcesses.reset();

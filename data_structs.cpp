@@ -22,8 +22,8 @@ ProcessInfo::ProcessInfo(){
   memory_vms_label  = "";
   memory_rss_label  = "";
   name              = "";
-  memory_vms_info   = INT_MIN;
-  memory_rss_info   = INT_MIN;
+  memory_vms_info   = -1;
+  memory_rss_info   = -1;
   nice              = INT_MIN;
   cpu_percent       = -DBL_MAX;
   memory_percent    = -DBL_MAX;
@@ -40,22 +40,33 @@ void ListProcessInfo::decapsulate(std::string &message){
   bpt::read_json(ss, pt);
   lProcesses.clear();
 
-//  std::cout << "--- message [" << strip(message)<<"]"<<std::endl;
+ std::cout << "--- message [" << strip(message)<<"]"<<std::endl;
   BOOST_FOREACH(const bpt::ptree::value_type& child, pt.get_child("data") ) {
     std::shared_ptr<ProcessInfo> pData(new ProcessInfo);
     pData->name              = child.second.get<std::string>("name");
+std::cout << "---    name:\t\t\t" << pData->name << std::endl;
     pData->username          = child.second.get<std::string>("username");
+std::cout << "---    username:\t\t" << pData->username << std::endl;
     pData->status            = child.second.get<std::string>("status");
+std::cout << "---    status:\t\t\t" << pData->status << std::endl;
     pData->cpu_times         = child.second.get<std::string>("cpu_times");
+std::cout << "---    cpu_times:\t\t" << pData->cpu_times << std::endl;
     pData->memory_vms_label  = child.second.get<std::string>("memory_vms_label");
+std::cout << "---    memory_vms_label:\t" << pData->memory_vms_label << std::endl;
     pData->memory_rss_label  = child.second.get<std::string>("memory_rss_label");
+std::cout << "---    memory_rss_label:\t" << pData->memory_rss_label << std::endl;
 
-    pData->memory_vms_info   = child.second.get<int>("memory_vms_info");
-    pData->memory_rss_info   = child.second.get<int>("memory_rss_info");
+    pData->memory_vms_info   = child.second.get<long>("memory_vms_info");
+std::cout << "---    memory_vms_info:\t\t" << pData->memory_vms_info << std::endl;
+    pData->memory_rss_info   = child.second.get<long>("memory_rss_info");
+std::cout << "---    memory_rss_info:\t\t" << pData->memory_rss_info << std::endl;
     pData->nice              = child.second.get<int>("nice");
+std::cout << "---    nice:\t\t\t" << pData->nice << std::endl;
 
     pData->cpu_percent       = child.second.get<double>("cpu_percent");
+std::cout << "---    cpu_percent:\t\t" << pData->cpu_percent << std::endl;
     pData->memory_percent    = child.second.get<double>("memory_percent");
+std::cout << "---    memory_percent:\t\t" << pData->memory_percent << std::endl;
 
 //    cout << "  *** name: " << pData->name << endl;
     lProcesses.push_back (  std::move(pData) );

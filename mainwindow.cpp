@@ -111,8 +111,8 @@ void MainWindow::realtimeDataSlot()
     for (int i=0; i<iSize; i++){
       value0 = listProcs[i]->memory_vms_info;
       value1 = value0-tmpValue;
-      cout << "*** name: "<<listProcs[i]->name<<endl;
-      cout << "*** memory_vms_info: "<<value0<<endl;
+//       cout << "*** name: "<<listProcs[i]->name<<endl;
+//       cout << "*** memory_vms_info: "<<value0<<endl;
     }
     // Obtaining ZMQ values
 //    zmq_msg_t msg;

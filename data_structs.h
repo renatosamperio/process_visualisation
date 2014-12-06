@@ -28,8 +28,8 @@ class ProcessInfo{
     std::string name;
     double cpu_percent;
     double memory_percent;
-    int memory_vms_info;
-    int memory_rss_info;
+    long memory_vms_info;
+    long memory_rss_info;
     int nice;
 
 };
