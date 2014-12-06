@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 # Setting project information
-project(procal)
-
+set(PROJECT_NAME procal)
+project(${PROJECT_NAME})
 # Adding C++11
 add_definitions(-std=c++11)
 include (${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros/SystemSpecificInformations.cmake)
@@ -32,22 +32,22 @@ file (GLOB Resources            *.qrc)
 
 # Creating executable and linking 
 QT5_ADD_RESOURCES (ResourceSources ${Resources})
-add_executable(procal ${UIs} ${Sources} ${Headers} ${ResourceSources})
-target_link_libraries(procal Qt5::PrintSupport Qt5::Widgets)
+add_executable(${PROJECT_NAME} ${UIs} ${Sources} ${Headers} ${ResourceSources})
+target_link_libraries(${PROJECT_NAME} Qt5::PrintSupport Qt5::Widgets)
 
 # Setting up ZMQ
 find_package(ZMQ               REQUIRED)
 if(${ZMQ_FOUND})
    message("Using ZNQ headers from: " ${ZMQ_INCLUDE_DIRS})
    include_directories(${ZMQ_INCLUDE_DIRS})
-   target_link_libraries(procal ${ZMQ_LIBRARIES})
+   target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
 else()
    message(FATAL "ZMQ not found on this system")
 endif()
 
-INSTALL(TARGETS procal 
-	DESTINATION /usr/local/bin/procal)
-# INSTALL(FILES Icons/RQExhib.png DESTINATION /reetiPrograms/RApplications/Icons)
+INSTALL(TARGETS ${PROJECT_NAME} 
+	DESTINATION /usr/local/bin/${PROJECT_NAME})
+INSTALL(FILES python/process_analyser.py DESTINATION /usr/local/bin/${PROJECT_NAME})
 
 # Setting up DEB file 
 set(CPACK_GENERATOR "DEB")
@@ -59,7 +59,6 @@ set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-# set(CPACK_DEBIAN_PACKAGE_DEPENDS "cssrobopec,libqt4-xml,libqt4-network,libqtgui4,treeupdatablereeti")
 set(CPACK_PACKAGE_DESCRIPTION "Visualisation tool for process analysis")
 set(CPACK_PACKAGE_CONTACT "Renato Samperio renatosamperio@gmail.com")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/cmake/control/postinst;${CMAKE_CURRENT_SOURCE_DIR}/cmake/control/preinst;")
@@ -71,8 +70,9 @@ ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
 ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 # SET(CPACK_RESOURCE_FILE_LICENSE    "/home/andy/vtk/CMake/Copyright.txt")
 # SET(CPACK_PACKAGE_DESCRIPTION_FILE "/home/andy/vtk/CMake/Copyright.txt")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "mesa-common-dev,qt5-default,qttools5-dev-tools,python-setuptools,python-psutil")
 
 # <foo>_<VersionNumber>-<DebianRevisionNumber>_<DebianArchitecture>.deb 
-SET(CPACK_PACKAGE_FILE_NAME "procal-${CPACK_PACKAGE_VERSION}-${DEB_SYSTEM_NAME}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
-SET(CPACK_PACKAGE_NAME "procal")
+SET(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${DEB_SYSTEM_NAME}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+SET(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 INCLUDE(CPack)
