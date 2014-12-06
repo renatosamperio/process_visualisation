@@ -1,0 +1,7 @@
+#!/bin/sh
+# postinst: post installation rules of procal package
+# written by Renato Samperio
+
+echo "Doing something super important like:"
+
+echo " + Creating a symbolic link for python script"

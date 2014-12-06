@@ -1,35 +1,78 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(testproject)
+# Setting project information
+project(procal)
 
+# Adding C++11
 add_definitions(-std=c++11)
+include (${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros/SystemSpecificInformations.cmake)
 
+# Setting route to cmake find files
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-find_package(ZMQ               REQUIRED)
-
+# Setting up Qt5 
 find_package(Qt5Widgets        REQUIRED)
 find_package(Qt5Core           REQUIRED)
 find_package(Qt5Gui            REQUIRED)
 find_package(Qt5PrintSupport   REQUIRED)
     
 set(CMAKE_INCLUDE_CURRENT_DIR  ON)
-# set(CMAKE_AUTOMOC              ON)
+set(CMAKE_AUTOMOC              ON)
 
+# Compiling Qt5 forms
+QT5_WRAP_UI(UIS_HDRS
+    mainwindow.ui
+)
+
+# Setting up project files
 file (GLOB Sources              *.cpp)
 file (GLOB Headers              *.h)
 file (GLOB UIs                  *.ui)
 file (GLOB Resources            *.qrc)
 
+# Creating executable and linking 
 QT5_ADD_RESOURCES (ResourceSources ${Resources})
-add_executable(plot_process_analyser ${Sources} ${Headers} ${ResourceSources})
+add_executable(procal ${UIs} ${Sources} ${Headers} ${ResourceSources})
+target_link_libraries(procal Qt5::PrintSupport Qt5::Widgets)
 
+# Setting up ZMQ
+find_package(ZMQ               REQUIRED)
 if(${ZMQ_FOUND})
    message("Using ZNQ headers from: " ${ZMQ_INCLUDE_DIRS})
    include_directories(${ZMQ_INCLUDE_DIRS})
-   target_link_libraries(plot_process_analyser ${ZMQ_LIBRARIES})
+   target_link_libraries(procal ${ZMQ_LIBRARIES})
 else()
    message(FATAL "ZMQ not found on this system")
 endif()
 
-target_link_libraries(plot_process_analyser Qt5::PrintSupport Qt5::Widgets)
+INSTALL(TARGETS procal 
+	DESTINATION /usr/local/bin/procal)
+# INSTALL(FILES Icons/RQExhib.png DESTINATION /reetiPrograms/RApplications/Icons)
+
+# Setting up DEB file 
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Renato Samperio")
+set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Process Analiser")
+set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION 
+   "Process analiser and plotter of live memory and cpu usage")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+# set(CPACK_DEBIAN_PACKAGE_DEPENDS "cssrobopec,libqt4-xml,libqt4-network,libqtgui4,treeupdatablereeti")
+set(CPACK_PACKAGE_DESCRIPTION "Visualisation tool for process analysis")
+set(CPACK_PACKAGE_CONTACT "Renato Samperio renatosamperio@gmail.com")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/cmake/control/postinst;${CMAKE_CURRENT_SOURCE_DIR}/cmake/control/preinst;")
+# (postinst, preinst, postrm, prerm) 
+IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+  SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
+  SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+# SET(CPACK_RESOURCE_FILE_LICENSE    "/home/andy/vtk/CMake/Copyright.txt")
+# SET(CPACK_PACKAGE_DESCRIPTION_FILE "/home/andy/vtk/CMake/Copyright.txt")
+
+# <foo>_<VersionNumber>-<DebianRevisionNumber>_<DebianArchitecture>.deb 
+SET(CPACK_PACKAGE_FILE_NAME "procal-${CPACK_PACKAGE_VERSION}-${DEB_SYSTEM_NAME}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+SET(CPACK_PACKAGE_NAME "procal")
+INCLUDE(CPack)
