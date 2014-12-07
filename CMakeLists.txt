@@ -25,10 +25,10 @@ QT5_WRAP_UI(UIS_HDRS
 )
 
 # Setting up project files
-file (GLOB Sources              *.cpp)
-file (GLOB Headers              *.h)
-file (GLOB UIs                  *.ui)
-file (GLOB Resources            *.qrc)
+file (GLOB Sources              ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file (GLOB Headers              ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+file (GLOB UIs                  ${CMAKE_CURRENT_SOURCE_DIR}/forms/*.ui)
+file (GLOB Resources            ${CMAKE_CURRENT_SOURCE_DIR}/forms/*.qrc)
 
 # Creating executable and linking 
 QT5_ADD_RESOURCES (ResourceSources ${Resources})
@@ -38,7 +38,7 @@ target_link_libraries(${PROJECT_NAME} Qt5::PrintSupport Qt5::Widgets)
 # Setting up ZMQ
 find_package(ZMQ               REQUIRED)
 if(${ZMQ_FOUND})
-   message("Using ZNQ headers from: " ${ZMQ_INCLUDE_DIRS})
+   message("Using ZMQ headers from: " ${ZMQ_INCLUDE_DIRS})
    include_directories(${ZMQ_INCLUDE_DIRS})
    target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
 else()
@@ -68,8 +68,8 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
   SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
 ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-# SET(CPACK_RESOURCE_FILE_LICENSE    "/home/andy/vtk/CMake/Copyright.txt")
-# SET(CPACK_PACKAGE_DESCRIPTION_FILE "/home/andy/vtk/CMake/Copyright.txt")
+# SET(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/license/Copyright.txt")
+# SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/license/Copyright.txt")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "mesa-common-dev,qt5-default,qttools5-dev-tools,python-setuptools,python-psutil")
 
 # <foo>_<VersionNumber>-<DebianRevisionNumber>_<DebianArchitecture>.deb 
