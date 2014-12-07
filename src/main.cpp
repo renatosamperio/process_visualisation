@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
   std::string sSubEndpoint = "tcp://127.0.0.1:5563";
   std::shared_ptr<GroupWindows> groupPlots( new GroupWindows(sSubEndpoint) );
-  groupPlots->isDataAvailable();
+  groupPlots->connect();
   int processSize = groupPlots->getListProcess()->getProcessSize();
   cout << "+ Number of monitoring processes: "<< processSize << endl;
 //   groupPlots.reset();
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     my_plots.push_back( std::move(tmp) );
 //    my_plots[i]->setupProcessInfo( groupPlots->getListProcess()->getLProcesses()[i] );
 //     my_plots[i]->setupProcessInfo( processInfo );
-    my_plots[i]->setupObserver( groupPlots );
+    my_plots[i]->setupObserver( groupPlots, i );
     my_plots[i]->show();
   }
 

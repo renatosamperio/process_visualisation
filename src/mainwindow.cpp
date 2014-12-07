@@ -8,17 +8,10 @@
 
 
 MainWindow::MainWindow(QWidget *parent) :
+  procId(-1),
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
-  // Setting up a publisher
-//  int iZMQ_sndhwm = 0;
-//  string sPubEndpoint = "tcp://*:5563";
-//  iResult = mtr_zipc::zipc_init_publisher (&m_zcontext,
-//                                 &m_zsocket,
-//                                 sPubEndpoint,
-//                                 iZMQ_sndhwm);
-
   // Initialisin plot variables
   tmpValue = 0.0;
   iTickStep= 100;
@@ -28,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
   const int height =(  QApplication::desktop()->height()-100)/ 4;
 //  std::cout << "*** ("<< height << ", "<< width << ")"<<std::endl;
 
-  cout << " + Setting up QT window properties"<<endl;
+//   cout << " + Setting up QT window properties"<<endl;
   ui->setupUi(this);
   setGeometry(400, 250, width, height);
 
@@ -66,7 +59,6 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
   customPlot->xAxis->setDateTimeFormat("hh:mm:ss");
   customPlot->xAxis->setAutoTickStep(false);
-//  cout << "iTickStep: "<< iTickStep<<endl;
   customPlot->xAxis->setTickStep(iTickStep);
   customPlot->axisRect()->setupFullAxesBox();
 
@@ -88,53 +80,15 @@ void MainWindow::realtimeDataSlot()
   double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
 #endif
   static double lastPointKey = 0;
-//  int windowStep = 100;
-  // If new data is ready
-   if (key-lastPointKey > 0.01) // at most add point every 10 ms
-//  if (key-lastPointKey > 1) // at most add point every 1000 ms
+   if (key-lastPointKey > 0.01 && procId >= 0) // at most add point every 10 ms
   {
-//    double value0 = qSin(key);
-//    double value0 = qSin(key)*10;
-//    if (value0 < 9 && value0 > 8)
-//        value0 = 0;
-//    std::string message = NumberToString ( value0 );
-//    std::cout << "*** key: ("<<key<<", "<< message<<")"<<std::endl;
-//    int size = zmq_send(m_zsocket, message.c_str(), strlen(message.c_str()), ZMQ_DONTWAIT);
-
     double value0 = 0.0;
     double value1 = 0.0;
-    observer->isDataAvailable();
     
-    std::shared_ptr<ListProcessInfo> list = observer->getListProcess();
-    std::vector<std::shared_ptr<ProcessInfo> > listProcs = list->getLProcesses();
-    int iSize = list->getProcessSize();
-    for (int i=0; i<iSize; i++){
-      value0 = listProcs[i]->memory_vms_info;
-      value1 = value0-tmpValue;
-//       cout << "*** name: "<<listProcs[i]->name<<endl;
-//       cout << "*** memory_vms_info: "<<value0<<endl;
-    }
-    // Obtaining ZMQ values
-//    zmq_msg_t msg;
-//    int rc = zmq_msg_init(&msg);
-//    assert(rc == 0);
-//    int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
-//    assert (rcr != -1);
-//    string rpl = strip(std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)) );
-//    zmq_msg_close(&msg);
-
-//    string message = isDataAvailable();
-//    cout << "*** ["<< processInfo->name <<"]: "<< message << endl;
-//    ListProcessInfo process_data;
-//    process_data.decapsulate(message);
-//    cout << "*** processSize: "<< process_data.processSize << endl;
-//    std::cout << "memory_vms_info:"  << process_data.lProcesses[0].memory_vms_info << std::endl;
-//    std::cout << "memory_rss_info:"  << process_data.lProcesses[0].memory_rss_info << std::endl;
-//    value0 = process_data.lProcesses[0].memory_vms_info;
-//    value1 = value0-tmpValue;
-//    std::cout << "memory_vms_info:"  << value0 << std::endl;
-//    std::cout << "derivative:"  << value1 << std::endl;
-//    cout << "RECV: "  << newValue<< " -> "<< value1 << endl;
+    observer->isDataAvailable();
+    std::vector<std::shared_ptr<ProcessInfo>> lData = observer->getListProcess()->getLProcesses();
+    value0 = lData[procId]->memory_vms_info;
+    value1 = value0-tmpValue;
 
     ui->customPlot->graph(0)->addData(key, value0);
     ui->customPlot->graph(1)->addData(key, value1);
@@ -212,32 +166,14 @@ void MainWindow::bracketDataSlot()
 }
 
 // void MainWindow::setupProcessInfo( std::shared_ptr<ProcessInfo> procInfo )
-void MainWindow::setupObserver( std::shared_ptr<GroupWindows> & obs )
+void MainWindow::setupObserver( std::shared_ptr<GroupWindows> & obs, int id )
 //void MainWindow::setupGroup(GroupWindows *grpPlots)
 {
-  cout << " + Assigning process information"<<endl;
+  cout << " + Assigning process information: ["<< id <<"]"<<endl;
   observer = obs;
-//   std::shared_ptr<ListProcessInfo> list = observer->getListProcess();
-//   std::vector<std::shared_ptr<ProcessInfo> > listProcs = list->getLProcesses();
-//   int iSize = list->getProcessSize();
-//   for (int i=0; i<iSize; i++){
-//     cout << "*** name: "<<listProcs[i]->name<<endl;
-//   }
+  procId = id;
 }
 
-std::string MainWindow::isDataAvailable(){
-  // Obtaining ZMQ values
-//  zmq_msg_t msg;
-//  int rc = zmq_msg_init(&msg);
-//  assert(rc == 0);
-//  int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
-//  assert (rcr != -1);
-//  string rpl = strip(std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)) );
-//  zmq_msg_close(&msg);
-//  string message_content = rpl.substr(rpl.find("{"));
-//  return message_content;
-return std::string("");
-}
 
 MainWindow::~MainWindow()
 {

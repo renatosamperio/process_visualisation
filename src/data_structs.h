@@ -38,6 +38,7 @@ class ListProcessInfo{
   public:
     ListProcessInfo();
     void decapsulate(std::string &message);
+    void decapsulate(std::string &message, int i);
 
     inline int getProcessSize(){return processSize;}
     inline std::vector<std::shared_ptr<ProcessInfo> > getLProcesses()

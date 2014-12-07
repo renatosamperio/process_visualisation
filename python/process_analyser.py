@@ -1,3 +1,4 @@
+# python process_analyser.py -b firefox kdelop -i 1
 
 #import curses
 import psutil
@@ -92,6 +93,7 @@ def get_populated_data_dict(p):
   return data
 
 def main(options):
+  print options
   # Prepare our context and publisher
   ctx = zmq.Context.instance()
   publisher = ctx.socket(zmq.PUB)
@@ -124,11 +126,6 @@ def main(options):
       pass
 
 if __name__ == '__main__':
-#  parser = OptionParser()
-#  parser.add_option("-p", "--process", dest="process", help="process name")
-#  parser.add_option("-i", "--interval", dest="interval", help="delay interval", type="float")
-#  (options, args) = parser.parse_args()
-
   parser2 = argparse.ArgumentParser(description='Process benchmarks.')
   parser2.add_argument("-b", "--process", default=[], type=str, nargs='+', help="process name")
   parser2.add_argument("-i", "--interval", dest="interval", help="delay interval", type=float)

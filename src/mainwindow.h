@@ -30,10 +30,8 @@ public:
 
   void setupRealtimeDataDemo(QCustomPlot *customPlot);
   void setupPlayground(QCustomPlot *customPlot);
-//   void setupProcessInfo(std::shared_ptr<ProcessInfo> procInfo);
-  void setupObserver(std::shared_ptr<GroupWindows> &);
+  void setupObserver(std::shared_ptr<GroupWindows> &, int id);
 
-  std::string isDataAvailable();
 
 private slots:
   void realtimeDataSlot();
@@ -44,7 +42,7 @@ private:
   QString demoName;
   QTimer dataTimer;
   QCPItemTracer *itemDemoPhaseTracer;
-  int currentDemoIndex;
+  int procId;
 
   void *m_zcontext;
   void *m_zsocket;

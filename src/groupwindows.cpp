@@ -28,22 +28,46 @@ GroupWindows::GroupWindows(std::string endPoint):
   zmq_connect (m_zsocket, sSubEndpoint.c_str() );
 }
 
+void GroupWindows::connect(){
+  zmq_msg_t msg;
+  int rc = zmq_msg_init(&msg);
+  assert(rc == 0);
+  int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
+  assert (rcr != -1);
+  string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
+  zmq_msg_close(&msg);
+  string message_content = rpl.substr(rpl.find("{"), rpl.size());
+  
+  try
+  {
+    lProcesses->decapsulate(message_content);
+  }
+  
+  catch(const boost::property_tree::ptree_bad_data &e)
+  {
+    cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
+  }
+  
+  catch(const boost::property_tree::ptree_bad_path &e)
+  {
+    cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
+  }
+  catch(const boost::property_tree::ptree_error &e)
+  {
+    cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
+  }
+}
+
 void GroupWindows::isDataAvailable(){
   // Obtaining ZMQ values
   zmq_msg_t msg;
-//  cout << "*** Initialising socket with message..."<< endl;
   int rc = zmq_msg_init(&msg);
   assert(rc == 0);
-//  cout << "*** Receiving message..."<< endl;
   int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
   assert (rcr != -1);
-//  cout << "*** Casting message in a string..."<< endl;
   string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
   zmq_msg_close(&msg);
-//  cout << "*** 1Closing message -" << rpl <<"-..."<< endl;
   string message_content = rpl.substr(rpl.find("{"), rpl.size());
- cout << "-- -- -- -- Parsing message [" << message_content.size() <<"] :"<< message_content << endl;
-//  cout << "*** Parsing message: -"<< message_content <<"-"<<endl;
   try
   {
     lProcesses->decapsulate(message_content);

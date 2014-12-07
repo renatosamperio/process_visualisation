@@ -39,6 +39,7 @@ public:
   explicit GroupWindows(std::string endPoint);
   ~GroupWindows();
   void isDataAvailable();
+  void connect();
 
   inline std::shared_ptr<ListProcessInfo> getListProcess(){ return lProcesses;}
 
