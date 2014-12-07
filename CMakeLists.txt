@@ -20,8 +20,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR  ON)
 set(CMAKE_AUTOMOC              ON)
 
 # Compiling Qt5 forms
-QT5_WRAP_UI(UIS_HDRS
-    mainwindow.ui
+QT5_WRAP_UI(procal
+    ${CMAKE_CURRENT_SOURCE_DIR}/forms/mainwindow.ui 
 )
 
 # Setting up project files
@@ -32,7 +32,13 @@ file (GLOB Resources            ${CMAKE_CURRENT_SOURCE_DIR}/forms/*.qrc)
 
 # Creating executable and linking 
 QT5_ADD_RESOURCES (ResourceSources ${Resources})
-add_executable(${PROJECT_NAME} ${UIs} ${Sources} ${Headers} ${ResourceSources})
+add_executable(${PROJECT_NAME} 
+		${UIS_HDRS} 
+		${UIs} 
+		${Sources} 
+		${Headers} 
+		${ResourceSources})
+		
 target_link_libraries(${PROJECT_NAME} Qt5::PrintSupport Qt5::Widgets)
 
 # Setting up ZMQ
