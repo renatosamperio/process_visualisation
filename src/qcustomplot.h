@@ -58,6 +58,9 @@
 #  include <QPrinter>
 #endif
 
+#include <string>
+#include <vector>
+#include <iostream>
 class QCPPainter;
 class QCustomPlot;
 class QCPLayerable;
@@ -92,6 +95,12 @@ class QCPAbstractItem;
 #else
 #  define QCP_LIB_DECL
 #endif
+/*
+ * Bytes to human function
+ * added by Renato Samperio
+ */
+
+std::string bytes2human(long number);
 
 /*!
   The QCP Namespace contains general enums and QFlags used throughout the QCustomPlot library
@@ -938,6 +947,7 @@ public:
   */
   enum LabelType { ltNumber    ///< Tick coordinate is regarded as normal number and will be displayed as such. (see \ref setNumberFormat)
                    ,ltDateTime ///< Tick coordinate is regarded as a date/time (seconds since 1970-01-01T00:00:00 UTC) and will be displayed and formatted as such. (for details, see \ref setDateTimeFormat)
+                   ,ltBytes ///< Tick coordinate is regarded as memory measure. 
                  };
   Q_ENUMS(LabelType)
   /*!

@@ -26,6 +26,38 @@
 #include "qcustomplot.h"
 
 
+std::string bytes2human(long number)
+{
+  if (number > 0)
+  {
+    // Calculating prefix values
+    std::vector<char> symbols {'K', 'M', 'G', 'T', 'P', 'E'};
+    std::vector<long> prefix;
+    int symSize = symbols.size();
+    long short1 = 1;
+    for (int i=0; i<symSize; i++)
+    {
+      prefix.push_back(short1 << (i+1)*10);
+    }
+    
+    // Getting human readable value
+    int prefSize = prefix.size();
+    int value = 0;
+    char buf[40]; 
+    for (int i=prefSize-1; i>=0; i--)
+    {   
+      if (number >= prefix[i])
+      {
+	value = int(number / prefix[i]);
+	sprintf(buf, "%d %cb", value, symbols[i]);
+	return std::string(buf);
+      }
+    }
+    sprintf(buf, "%d B", static_cast<int>(number) );
+    return std::string(buf);
+  }
+  return std::string("");
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4038,7 +4070,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mTickLabels(true),
   mAutoTickLabels(true),
   mTickLabelRotation(0),
-  mTickLabelType(ltNumber),
+  mTickLabelType(ltBytes),
   mTickLabelFont(mParentPlot->font()),
   mSelectedTickLabelFont(QFont(mTickLabelFont.family(), mTickLabelFont.pointSize(), QFont::Bold)),
   mTickLabelColor(Qt::black),
@@ -5434,7 +5466,8 @@ void QCPAxis::setupTickVectors()
     {
       for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
         mTickVectorLabels[i] = mParentPlot->locale().toString(mTickVector.at(i), mNumberFormatChar, mNumberPrecision);
-    } else if (mTickLabelType == ltDateTime)
+    } 
+    else if (mTickLabelType == ltDateTime)
     {
       for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
       {
@@ -5443,6 +5476,14 @@ void QCPAxis::setupTickVectors()
 #else
         mTickVectorLabels[i] = mParentPlot->locale().toString(QDateTime::fromMSecsSinceEpoch(mTickVector.at(i)*1000), mDateTimeFormat);
 #endif
+      }
+    }
+    else if (mTickLabelType == ltBytes)
+    {
+      for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
+      {
+	QString qstr(bytes2human(mTickVector.at(i)).c_str() );
+	mTickVectorLabels[i] = qstr;
       }
     }
   } else // mAutoTickLabels == false
@@ -5828,6 +5869,7 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
       cachePainter.setPen(painter->pen());
       drawTickLabel(&cachePainter, -labelData.rotatedTotalBounds.topLeft().x(), -labelData.rotatedTotalBounds.topLeft().y(), labelData);
       mLabelCache.insert(text, newCachedLabel, 1);
+
     }
     // draw cached label:
     const CachedLabel *cachedLabel = mLabelCache.object(text);
