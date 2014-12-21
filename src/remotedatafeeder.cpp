@@ -1,7 +1,8 @@
 #include "remotedatafeeder.h"
 
 RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
-  lProcesses(new ListProcessInfo)
+  lProcesses(new ListProcessInfo),
+  bLoopCtrl(true)
 {
   // Preparing ZMQ subscriber
   int iResult = 0;
@@ -16,69 +17,6 @@ RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
   iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, "process_info", 0);
   zmq_connect (m_zsocket, sSubEndpoint.c_str() );
   
-  
-//   thread.start(*this);
-//   _event.wait();
-}
-
-void RemoteDataFeeder::connect(){
-  zmq_msg_t msg;
-  int rc = zmq_msg_init(&msg);
-  assert(rc == 0);
-  int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
-  assert (rcr != -1);
-  string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
-  zmq_msg_close(&msg);
-  string message_content = rpl.substr(rpl.find("{"), rpl.size());
-  
-  try
-  {
-    lProcesses->decapsulate(message_content);
-  }
-  
-  catch(const boost::property_tree::ptree_bad_data &e)
-  {
-    cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
-  }
-  
-  catch(const boost::property_tree::ptree_bad_path &e)
-  {
-    cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
-  }
-  catch(const boost::property_tree::ptree_error &e)
-  {
-    cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
-  }
-}
-
-void RemoteDataFeeder::isDataAvailable(){
-  // Obtaining ZMQ values
-  zmq_msg_t msg;
-  int rc = zmq_msg_init(&msg);
-  assert(rc == 0);
-  int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
-  assert (rcr != -1);
-  string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
-  zmq_msg_close(&msg);
-  string message_content = rpl.substr(rpl.find("{"), rpl.size());
-  try
-  {
-    lProcesses->decapsulate(message_content);
-  }
-  
-  catch(const boost::property_tree::ptree_bad_data &e)
-  {
-    cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
-  }
-  
-  catch(const boost::property_tree::ptree_bad_path &e)
-  {
-    cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
-  }
-  catch(const boost::property_tree::ptree_error &e)
-  {
-    cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
-  }
 }
 
 RemoteDataFeeder::~RemoteDataFeeder()
@@ -93,42 +31,51 @@ RemoteDataFeeder::~RemoteDataFeeder()
 
 void RemoteDataFeeder::run()
 {
-  while (1)
+  //TODO: Log catch 
+  while (bLoopCtrl)
   {
+    // Preparing message for ZMQ socket
     zmq_msg_t msg;
     int rc = zmq_msg_init(&msg);
     assert(rc == 0);
-    int rcr = zmq_msg_recv (&msg, m_zsocket, 0);
-    assert (rcr != -1);
-    string rpl = std::string(static_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
-    zmq_msg_close(&msg);
-    string message_content = rpl.substr(rpl.find("{"), rpl.size());
+    int rcr = zmq_msg_recv (&msg, m_zsocket, ZMQ_NOBLOCK);
+    size_t iMsgSize = zmq_msg_size(&msg);
     
-    lock_.lock();
-    try
+    // If something has been received, parsed it
+    if (iMsgSize > 0)
     {
-      lProcesses->decapsulate(message_content);
-//       std::cout << "Message:\n"<<message_content<<std::endl;
+      string rpl = std::string(static_cast<char*>(
+			    zmq_msg_data(&msg)), iMsgSize);
+      zmq_msg_close(&msg);
+      string message_content = rpl.substr(rpl.find("{"), rpl.size());
+      
+      // Parsing incoming message 
+      lock_.lock();
+      try
+      {
+	lProcesses->decapsulate(message_content);
+      }
+      
+      catch(const boost::property_tree::ptree_bad_data &e)
+      {
+	hasStarted = false;
+	cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
+      }
+      
+      catch(const boost::property_tree::ptree_bad_path &e)
+      {
+	hasStarted = false;
+	cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
+      }
+      catch(const boost::property_tree::ptree_error &e)
+      {
+	hasStarted = false;
+	cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
+      }
+      hasStarted = true;
+      last_message_timer.restart();
+      lock_.unlock();
     }
-    
-    catch(const boost::property_tree::ptree_bad_data &e)
-    {
-      hasStarted = false;
-      cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
-    }
-    
-    catch(const boost::property_tree::ptree_bad_path &e)
-    {
-      hasStarted = false;
-      cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
-    }
-    catch(const boost::property_tree::ptree_error &e)
-    {
-      hasStarted = false;
-      cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
-    }
-    hasStarted = true;
-    lock_.unlock();
   }
 }
 
@@ -143,14 +90,11 @@ bool RemoteDataFeeder::isReceivingData()
   //TODO: Calculate a time since last available message was received
 }
 
-void RemoteDataFeeder::notify()
-{
-// 	_event.set();
+std::shared_ptr<ListProcessInfo> RemoteDataFeeder::data()
+{ 
+  lock_.lock();
+  std::shared_ptr<ListProcessInfo> refProcesses = lProcesses;
+  lock_.unlock();
+  return refProcesses;
 }
-void RemoteDataFeeder::join()
-{
-// 	thread.join();
-}
-  
-
 	

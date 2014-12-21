@@ -33,6 +33,7 @@ extern "C" {
 #include "Poco/Thread.h"
 #include "Poco/Runnable.h"
 #include "Poco/Event.h"
+#include "Poco/Stopwatch.h"
 
 #include "zhelpers.h"
 #include "data_structs.h"
@@ -44,14 +45,15 @@ public:
   ~RemoteDataFeeder();
   
   void run();
-  void notify();
   void join();
   
   bool isReceivingData();
   void isDataAvailable();
   void connect();
 
-  inline std::shared_ptr<ListProcessInfo> getData(){ return lProcesses;}
+  std::shared_ptr<ListProcessInfo> getData(){ return lProcesses;}
+  std::shared_ptr<ListProcessInfo> data();
+  inline double waiting_time() {return last_message_timer.elapsed();}
 
 private:
   void *m_zcontext;
@@ -59,7 +61,9 @@ private:
   double tmpValue;
   
   bool hasStarted;
+  bool bLoopCtrl;
   Poco::Mutex lock_;
+  Poco::Stopwatch last_message_timer;
   
 //   Poco::Thread thread;
   Poco::Event _event;

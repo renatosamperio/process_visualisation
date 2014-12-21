@@ -29,7 +29,6 @@ MainWindow::MainWindow(QWidget *parent) :
   move(0, 10);
   ui->customPlot->replot();
 
-  observer->join();
 }
 
 void MainWindow::setupTimeSeriesPlot(QCustomPlot *customPlot)
@@ -64,7 +63,9 @@ void MainWindow::setupTimeSeriesPlot(QCustomPlot *customPlot)
   connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
 
   connect(&dataTimer, SIGNAL(timeout()), this, SLOT(timeSeriesFeederSlot()));
-  dataTimer.start(0); }
+  dataTimer.start(0); 
+
+}
 
 void MainWindow::timeSeriesFeederSlot()
 {
@@ -79,11 +80,10 @@ void MainWindow::timeSeriesFeederSlot()
   {
     double value0 = 0.0;
     double value1 = 0.0;
-//     observer->isDataAvailable();
-    std::vector<std::shared_ptr<ProcessInfo>> lData = observer->getData()->getLProcesses();
+    
+    std::vector<std::shared_ptr<ProcessInfo>> lData = observer->data()->getLProcesses();
     value0 = lData[procId]->memory_vms_info;
     value1 = value0-tmpValue;
-//     cout << "  - Requesting data ["<< value0<<", "<< value1 <<"]" << endl;
 
     ui->customPlot->graph(0)->addData(key, value0);
     ui->customPlot->graph(0)->removeDataBefore(key-iWindowStep);
@@ -111,19 +111,24 @@ void MainWindow::timeSeriesFeederSlot()
   static double lastFpsKey;
   static int frameCount;
   ++frameCount;
-  if (key-lastFpsKey > 2) // average fps over 2 seconds
+  
+  if (key-lastFpsKey > 1) // average fps over 1 second(s)
   {
-    ui->statusBar->showMessage(
-          QString("%1 FPS, Total Data points: %2")
+    double waitingTime = observer->waiting_time();
+    
+    QString status_message = QString("%1 FPS, Total Data points: %2")
           .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-          .arg(ui->customPlot->graph(0)->data()->count()+ui->customPlot->graph(1)->data()->count())
-          , 0);
+          .arg(ui->customPlot->graph(0)->data()->count()+ui->customPlot->graph(1)->data()->count());
+    status_message += QString("                                                        ");
+    status_message += QString("Time since last message: %1 s")
+          .arg( QString::number( waitingTime/ 1000000, 'f', 2 ) );
+	  
     lastFpsKey = key;
     frameCount = 0;
+    ui->statusBar->showMessage(status_message, 0);
   }
 }
 
-// void MainWindow::setupProcessInfo( std::shared_ptr<ProcessInfo> procInfo )
 void MainWindow::setupObserver( std::shared_ptr<RemoteDataFeeder> & obs, int id )
 {
   cout << " + Assigning process information: ["<< id <<"]"<<endl;
@@ -134,7 +139,6 @@ void MainWindow::setupObserver( std::shared_ptr<RemoteDataFeeder> & obs, int id 
   setWindowTitle(windowProcessName + " Virtual Memory");
 }
  
-
 MainWindow::~MainWindow()
 {
   delete ui;

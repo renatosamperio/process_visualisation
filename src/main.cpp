@@ -5,17 +5,12 @@
 #include <vector>
 
 #include "mainwindow.h"
-// #include "groupwindows.h"
 #include "remotedatafeeder.h"
-// #include "Poco/Thread.h"
 #include "Poco/ThreadPool.h"
 #include "Poco/Runnable.h"
 
-#include <qthread.h>
-#include <qthreadpool.h>
-
- class GUIinThread : public Poco::Runnable
- {
+class GUIinThread : public Poco::Runnable
+{
   public:
     GUIinThread(std::shared_ptr<RemoteDataFeeder> observer):
     dataObserver(observer)
@@ -30,8 +25,10 @@
   
       QApplication a(argc, &argv);
 
+      // Wait until data is available to run time series timeSeriesPlotter
       while (!dataObserver->isReceivingData());
       
+      // Setting up time series plotter with new incoming data feeds
       int processSize = dataObserver->getData()->getProcessSize(); 
       std::vector<std::shared_ptr<MainWindow>> my_plots;
       for (int i=0; i<processSize; i++)
@@ -48,27 +45,18 @@
   
   private:
     std::shared_ptr<RemoteDataFeeder> dataObserver;
- };
+};
  
 int main(int argc, char *argv[])
 {
   std::string sSubEndpoint = "tcp://127.0.0.1:5563";
   std::shared_ptr<RemoteDataFeeder> dataObserver( new RemoteDataFeeder(sSubEndpoint) );
-//   int processSize = dataObserver->getData()->getProcessSize(); 
-  
-//   cout << "+ Number of monitoring processes: "<< processSize << endl;
    
   GUIinThread timeSeriesPlotter(dataObserver);
   
   Poco::ThreadPool::defaultPool().start(*dataObserver);
-  
   Poco::ThreadPool::defaultPool().start(timeSeriesPlotter);
   Poco::ThreadPool::defaultPool().joinAll();
   
-//   Poco::Thread thread;
-//   thread.start(runnable);
-//   thread.join();
- 
-//  while(true); // prevent main() from return
- return 0;
+  return 0;
 }
