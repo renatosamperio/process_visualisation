@@ -51,6 +51,17 @@ else()
    message(FATAL "ZMQ not found on this system")
 endif()
 
+# Setting up Poco
+find_package(Poco               REQUIRED)
+if(${Poco_FOUND})
+   message("Using Poco librariesfrom: " ${Poco_INCLUDE_DIRS})
+   link_directories(${Poco_LIBRARY_DIRS})
+   include_directories(${Poco_INCLUDE_DIRS})
+   target_link_libraries(${PROJECT_NAME} ${Poco_LIBRARIES})
+else()
+   message(FATAL "Poco not found on this system")
+endif()
+
 INSTALL(TARGETS ${PROJECT_NAME} 
 	DESTINATION /usr/local/bin/${PROJECT_NAME})
 INSTALL(FILES python/process_analyser.py DESTINATION /usr/local/bin/${PROJECT_NAME})

@@ -1,17 +1,20 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QTimer>
-#include "qcustomplot.h"
 #include <iostream>
 #include <sstream>
+
+#include <QMainWindow>
+#include <QTimer>
+#include <qrunnable.h>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 
 #include <zmq.hpp>
+
+#include "qcustomplot.h"
 #include "zhelpers.h"
 #include "data_structs.h"
 #include "remotedatafeeder.h"

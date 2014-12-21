@@ -29,15 +29,25 @@ extern "C" {
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 #include <zmq.hpp>
-#include "zhelpers.h"
 
+#include "Poco/Thread.h"
+#include "Poco/Runnable.h"
+#include "Poco/Event.h"
+
+#include "zhelpers.h"
 #include "data_structs.h"
 
-class RemoteDataFeeder
+class RemoteDataFeeder : public Poco::Runnable
 {
 public:
   explicit RemoteDataFeeder(std::string endPoint);
   ~RemoteDataFeeder();
+  
+  void run();
+  void notify();
+  void join();
+  
+  bool isReceivingData();
   void isDataAvailable();
   void connect();
 
@@ -47,6 +57,12 @@ private:
   void *m_zcontext;
   void *m_zsocket;
   double tmpValue;
+  
+  bool hasStarted;
+  Poco::Mutex lock_;
+  
+//   Poco::Thread thread;
+  Poco::Event _event;
 
   std::shared_ptr<ListProcessInfo> lProcesses;
 };

@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
   move(0, 10);
   ui->customPlot->replot();
 
+  observer->join();
 }
 
 void MainWindow::setupTimeSeriesPlot(QCustomPlot *customPlot)
@@ -78,11 +79,11 @@ void MainWindow::timeSeriesFeederSlot()
   {
     double value0 = 0.0;
     double value1 = 0.0;
-    
-    observer->isDataAvailable();
+//     observer->isDataAvailable();
     std::vector<std::shared_ptr<ProcessInfo>> lData = observer->getData()->getLProcesses();
     value0 = lData[procId]->memory_vms_info;
     value1 = value0-tmpValue;
+//     cout << "  - Requesting data ["<< value0<<", "<< value1 <<"]" << endl;
 
     ui->customPlot->graph(0)->addData(key, value0);
     ui->customPlot->graph(0)->removeDataBefore(key-iWindowStep);
@@ -132,7 +133,7 @@ void MainWindow::setupObserver( std::shared_ptr<RemoteDataFeeder> & obs, int id 
   
   setWindowTitle(windowProcessName + " Virtual Memory");
 }
-
+ 
 
 MainWindow::~MainWindow()
 {
