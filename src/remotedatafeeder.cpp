@@ -1,24 +1,13 @@
-#include "groupwindows.h"
+#include "remotedatafeeder.h"
 
-GroupWindows::GroupWindows(std::string endPoint):
+RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
   lProcesses(new ListProcessInfo)
 {
-  // Setting up a publisher
-//  int iZMQ_sndhwm = 0;
-//  string sPubEndpoint = "tcp://*:5563";
-//  iResult = mtr_zipc::zipc_init_publisher (&m_zcontext,
-//                                 &m_zsocket,
-//                                 sPubEndpoint,
-//                                 iZMQ_sndhwm);
-
-
-//  *process_data =  process_data(new ListProcessInfo);
-
   // Preparing ZMQ subscriber
-  int iResult = 0;iResult = iResult;
+  int iResult = 0;
+  (void)iResult;
   int iZMQ_rcvhwm = 0;
   m_zcontext = zmq_ctx_new();
-//  string sSubEndpoint = "tcp://127.0.0.1:5563";
   string sSubEndpoint = endPoint;
 
   m_zcontext = zmq_ctx_new ();
@@ -28,7 +17,7 @@ GroupWindows::GroupWindows(std::string endPoint):
   zmq_connect (m_zsocket, sSubEndpoint.c_str() );
 }
 
-void GroupWindows::connect(){
+void RemoteDataFeeder::connect(){
   zmq_msg_t msg;
   int rc = zmq_msg_init(&msg);
   assert(rc == 0);
@@ -58,7 +47,7 @@ void GroupWindows::connect(){
   }
 }
 
-void GroupWindows::isDataAvailable(){
+void RemoteDataFeeder::isDataAvailable(){
   // Obtaining ZMQ values
   zmq_msg_t msg;
   int rc = zmq_msg_init(&msg);
@@ -88,7 +77,7 @@ void GroupWindows::isDataAvailable(){
   }
 }
 
-GroupWindows::~GroupWindows()
+RemoteDataFeeder::~RemoteDataFeeder()
 {
   // Delete context and socket !!!
   int iResult = zmq_close(m_zsocket);

@@ -45,10 +45,9 @@ class ListProcessInfo{
       {
 	return lProcesses;
       };
-
+    inline std::shared_ptr<ProcessInfo> getProcess(int id){return lProcesses[id];}
 private:
     int processSize;
-//    std::vector<ProcessInfo> lProcesses;
     std::vector< std::shared_ptr<ProcessInfo> > lProcesses;
 };
 

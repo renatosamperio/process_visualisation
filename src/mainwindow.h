@@ -14,7 +14,7 @@
 #include <zmq.hpp>
 #include "zhelpers.h"
 #include "data_structs.h"
-#include "groupwindows.h"
+#include "remotedatafeeder.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,18 +28,17 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
-  void setupRealtimeDataDemo(QCustomPlot *customPlot);
+  void setupTimeSeriesPlot(QCustomPlot *customPlot);
   void setupPlayground(QCustomPlot *customPlot);
-  void setupObserver(std::shared_ptr<GroupWindows> &, int id);
+  void setupObserver(std::shared_ptr<RemoteDataFeeder> &, int id);
 
 
 private slots:
-  void realtimeDataSlot();
-  void bracketDataSlot();
+  void timeSeriesFeederSlot();
 
 private:
   Ui::MainWindow *ui;
-  QString demoName;
+  QString windowProcessName;
   QTimer dataTimer;
   QCPItemTracer *itemDemoPhaseTracer;
   int procId;
@@ -52,7 +51,9 @@ private:
   int iWindowStep;
 
 //   std::shared_ptr<ProcessInfo> processInfo;
-  std::shared_ptr<GroupWindows> observer;
+  std::shared_ptr<RemoteDataFeeder> observer;
+  
+  int iPlotSize;
 
 };
 

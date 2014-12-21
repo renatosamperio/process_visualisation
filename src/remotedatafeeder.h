@@ -1,5 +1,5 @@
-#ifndef _GROUPWINDOWS_H_
-#define _GROUPWINDOWS_H_
+#ifndef _REMOTEDATAFEEDER_H_
+#define _REMOTEDATAFEEDER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,15 +33,15 @@ extern "C" {
 
 #include "data_structs.h"
 
-class GroupWindows
+class RemoteDataFeeder
 {
 public:
-  explicit GroupWindows(std::string endPoint);
-  ~GroupWindows();
+  explicit RemoteDataFeeder(std::string endPoint);
+  ~RemoteDataFeeder();
   void isDataAvailable();
   void connect();
 
-  inline std::shared_ptr<ListProcessInfo> getListProcess(){ return lProcesses;}
+  inline std::shared_ptr<ListProcessInfo> getData(){ return lProcesses;}
 
 private:
   void *m_zcontext;
@@ -51,4 +51,4 @@ private:
   std::shared_ptr<ListProcessInfo> lProcesses;
 };
 
-#endif // _GROUPWINDOWS_H_
+#endif // _REMOTEDATAFEEDER_H_
