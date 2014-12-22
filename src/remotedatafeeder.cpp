@@ -51,34 +51,34 @@ void RemoteDataFeeder::run()
 		string message_content = rpl.substr(rpl.find("{"), rpl.size());
 
 		// Parsing incoming message 
-		lock_.lock();
 		try
 		{
-		lProcesses->decapsulate(message_content);
+			lock_.lock();
+			lProcesses->decapsulate(message_content);
+			lock_.unlock();
 		}
-
 		catch(const boost::property_tree::ptree_bad_data &e)
 		{
-		hasStarted = false;
-		cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
+			hasStarted = false;
+			cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
 		}
-
 		catch(const boost::property_tree::ptree_bad_path &e)
 		{
-		hasStarted = false;
-		cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
+			hasStarted = false;
+			cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
 		}
 		catch(const boost::property_tree::ptree_error &e)
 		{
-		hasStarted = false;
-		cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
+			hasStarted = false;
+			cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
 		}
       
 		hasStarted = true;
 		waitingTime = last_message_timer.elapsed();
 		last_message_timer.restart();
-		lock_.unlock();
     }
+    else
+		waitingTime = std::max(waitingTime, static_cast<double>(last_message_timer.elapsed()) );
     _event.tryWait(100);
   }
 }
