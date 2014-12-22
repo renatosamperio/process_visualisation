@@ -53,7 +53,8 @@ public:
 
   std::shared_ptr<ListProcessInfo> getData(){ return lProcesses;}
   std::shared_ptr<ListProcessInfo> data();
-  inline double waiting_time() {return last_message_timer.elapsed();}
+  
+  inline double waiting_time(){ return waitingTime; }
 
 private:
   void *m_zcontext;
@@ -63,9 +64,9 @@ private:
   bool hasStarted;
   bool bLoopCtrl;
   Poco::Mutex lock_;
-  Poco::Stopwatch last_message_timer;
   
-//   Poco::Thread thread;
+  Poco::Stopwatch last_message_timer;
+  double waitingTime;
   Poco::Event _event;
 
   std::shared_ptr<ListProcessInfo> lProcesses;

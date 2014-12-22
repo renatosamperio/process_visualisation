@@ -53,7 +53,6 @@ private:
   int iTickStep;
   int iWindowStep;
 
-//   std::shared_ptr<ProcessInfo> processInfo;
   std::shared_ptr<RemoteDataFeeder> observer;
   
   int iPlotSize;

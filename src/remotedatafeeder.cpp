@@ -2,7 +2,8 @@
 
 RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
   lProcesses(new ListProcessInfo),
-  bLoopCtrl(true)
+  bLoopCtrl(true),
+  waitingTime(0.0)
 {
   // Preparing ZMQ subscriber
   int iResult = 0;
@@ -31,7 +32,7 @@ RemoteDataFeeder::~RemoteDataFeeder()
 
 void RemoteDataFeeder::run()
 {
-  //TODO: Log catch 
+  //TODO: Log entries from catch's
   while (bLoopCtrl)
   {
     // Preparing message for ZMQ socket
@@ -44,38 +45,41 @@ void RemoteDataFeeder::run()
     // If something has been received, parsed it
     if (iMsgSize > 0)
     {
-      string rpl = std::string(static_cast<char*>(
-			    zmq_msg_data(&msg)), iMsgSize);
-      zmq_msg_close(&msg);
-      string message_content = rpl.substr(rpl.find("{"), rpl.size());
+		string rpl = std::string(static_cast<char*>(
+		zmq_msg_data(&msg)), iMsgSize);
+		zmq_msg_close(&msg);
+		string message_content = rpl.substr(rpl.find("{"), rpl.size());
+
+		// Parsing incoming message 
+		lock_.lock();
+		try
+		{
+		lProcesses->decapsulate(message_content);
+		}
+
+		catch(const boost::property_tree::ptree_bad_data &e)
+		{
+		hasStarted = false;
+		cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
+		}
+
+		catch(const boost::property_tree::ptree_bad_path &e)
+		{
+		hasStarted = false;
+		cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
+		}
+		catch(const boost::property_tree::ptree_error &e)
+		{
+		hasStarted = false;
+		cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
+		}
       
-      // Parsing incoming message 
-      lock_.lock();
-      try
-      {
-	lProcesses->decapsulate(message_content);
-      }
-      
-      catch(const boost::property_tree::ptree_bad_data &e)
-      {
-	hasStarted = false;
-	cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
-      }
-      
-      catch(const boost::property_tree::ptree_bad_path &e)
-      {
-	hasStarted = false;
-	cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
-      }
-      catch(const boost::property_tree::ptree_error &e)
-      {
-	hasStarted = false;
-	cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
-      }
-      hasStarted = true;
-      last_message_timer.restart();
-      lock_.unlock();
+		hasStarted = true;
+		waitingTime = last_message_timer.elapsed();
+		last_message_timer.restart();
+		lock_.unlock();
     }
+    _event.tryWait(100);
   }
 }
 
@@ -97,4 +101,4 @@ std::shared_ptr<ListProcessInfo> RemoteDataFeeder::data()
   lock_.unlock();
   return refProcesses;
 }
-	
+
