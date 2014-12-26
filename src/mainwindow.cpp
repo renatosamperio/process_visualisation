@@ -157,7 +157,7 @@ void MainWindow::setupObserver( std::shared_ptr<RemoteDataFeeder> & obs,
 		  break;
 	  case kCPU:
 		  windowTitle = "CPU usage";
-		  m_ui->customPlot->setYAxisUnits(QCPAxis::LabelType::ltNumber);
+		  m_ui->customPlot->setYAxisUnits(QCPAxis::LabelType::lPercentage);
 		  break;
 	  default: break;
   }

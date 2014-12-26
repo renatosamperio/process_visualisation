@@ -5486,6 +5486,11 @@ void QCPAxis::setupTickVectors()
 	mTickVectorLabels[i] = qstr;
       }
     }
+    else if (mTickLabelType == lPercentage)
+    {
+      for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
+        mTickVectorLabels[i] = (mParentPlot->locale().toString(mTickVector.at(i), mNumberFormatChar, mNumberPrecision)+QString(" %"));
+    } 
   } else // mAutoTickLabels == false
   {
     if (mAutoTicks) // ticks generated automatically, but not ticklabels, so emit ticksRequest here for labels
