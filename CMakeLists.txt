@@ -41,10 +41,19 @@ add_executable(${PROJECT_NAME}
 		
 target_link_libraries(${PROJECT_NAME} Qt5::PrintSupport Qt5::Widgets)
 
+# Setting Boost
+FIND_PACKAGE( Boost  COMPONENTS program_options REQUIRED )
+if(${Boost_FOUND})
+   include_directories(${Boost_INCLUDE_DIRS})
+   target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+else()
+   message(FATAL "ZMQ not found on this system")
+endif()
+
 # Setting up ZMQ
 find_package(ZMQ               REQUIRED)
 if(${ZMQ_FOUND})
-   message("Using ZMQ headers from: " ${ZMQ_INCLUDE_DIRS})
+#    message("Using ZMQ headers from: " ${ZMQ_INCLUDE_DIRS})
    include_directories(${ZMQ_INCLUDE_DIRS})
    target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
 else()
@@ -54,9 +63,10 @@ endif()
 # Setting up Poco
 find_package(Poco               REQUIRED)
 if(${Poco_FOUND})
-   message("Using Poco librariesfrom: " ${Poco_INCLUDE_DIRS})
+#    message("Using Poco librariesfrom: " ${Poco_INCLUDE_DIRS})
    link_directories(${Poco_LIBRARY_DIRS})
    include_directories(${Poco_INCLUDE_DIRS})
+#    message ("*** Poco_LIBRARIES: ${Poco_LIBRARIES}")
    target_link_libraries(${PROJECT_NAME} ${Poco_LIBRARIES})
 else()
    message(FATAL "Poco not found on this system")

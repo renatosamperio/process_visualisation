@@ -1,6 +1,7 @@
 #include "remotedatafeeder.h"
 
 RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
+  m_hasStarted(false),
   lProcesses(new ListProcessInfo),
   bLoopCtrl(true),
   waitingTime(0.0)
@@ -17,7 +18,6 @@ RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
   iResult = zmq_setsockopt(m_zsocket, ZMQ_RCVHWM, &iZMQ_rcvhwm, sizeof(iZMQ_rcvhwm));
   iResult = zmq_setsockopt(m_zsocket, ZMQ_SUBSCRIBE, "process_info", 0);
   zmq_connect (m_zsocket, sSubEndpoint.c_str() );
-  
 }
 
 RemoteDataFeeder::~RemoteDataFeeder()
@@ -59,39 +59,43 @@ void RemoteDataFeeder::run()
 		}
 		catch(const boost::property_tree::ptree_bad_data &e)
 		{
-			hasStarted = false;
+			m_hasStarted = false;
 			cout << "-- -- -- -- Ptree Bad Data: " << e.what() << endl;
 		}
 		catch(const boost::property_tree::ptree_bad_path &e)
 		{
-			hasStarted = false;
+			m_hasStarted = false;
 			cout << "-- -- -- -- Ptree Bad Path: " << e.what() << endl;
 		}
 		catch(const boost::property_tree::ptree_error &e)
 		{
-			hasStarted = false;
+			m_hasStarted = false;
 			cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
 		}
       
-		hasStarted = true;
+		lock_.lock();
+		m_hasStarted = true;
 		waitingTime = last_message_timer.elapsed();
 		last_message_timer.restart();
+		lock_.unlock();
     }
     else
+	{
+		lock_.lock();
+		m_hasStarted = false;
 		waitingTime = std::max(waitingTime, static_cast<double>(last_message_timer.elapsed()) );
+		lock_.unlock();
+	}
     _event.tryWait(100);
   }
 }
 
 bool RemoteDataFeeder::isReceivingData()
 {
-  
   lock_.lock();
-  bool reply = hasStarted;
+  bool reply = m_hasStarted;
   lock_.unlock();
   return reply;
-  
-  //TODO: Calculate a time since last available message was received
 }
 
 std::shared_ptr<ListProcessInfo> RemoteDataFeeder::data()

@@ -48,10 +48,7 @@ public:
   void join();
   
   bool isReceivingData();
-  void isDataAvailable();
-  void connect();
 
-  std::shared_ptr<ListProcessInfo> getData(){ return lProcesses;}
   std::shared_ptr<ListProcessInfo> data();
   
   inline double waiting_time(){ return waitingTime; }
@@ -59,9 +56,8 @@ public:
 private:
   void *m_zcontext;
   void *m_zsocket;
-  double tmpValue;
   
-  bool hasStarted;
+  bool m_hasStarted;
   bool bLoopCtrl;
   Poco::Mutex lock_;
   

@@ -8662,6 +8662,11 @@ QCustomPlot::~QCustomPlot()
   mLayers.clear();
 }
 
+void QCustomPlot::setYAxisUnits(QCPAxis::LabelType type)
+{
+	yAxis->setTickLabelType(type);
+}
+
 /*!
   Sets which elements are forcibly drawn antialiased as an \a or combination of QCP::AntialiasedElement.
   

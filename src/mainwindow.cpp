@@ -8,35 +8,32 @@
 
 
 MainWindow::MainWindow(QWidget *parent) :
-  procId(-1),
+  m_procId(-1),
   QMainWindow(parent),
-  iTickStep(100),
-  iWindowStep(1000),
-  tmpValue(0.0),
-  ui(new Ui::MainWindow),
-  iPlotSize(1)
+  m_iTickStep(100),
+  m_iWindowStep(1000),
+  m_tmpValue(0.0),
+  m_ui(new Ui::MainWindow),
+  m_plotType(kNone)
 {
 
+  //TODO: Make position, width and height depending on amount of graphs
   const int width = ( QApplication::desktop()->width()-10 ) /2;
-  const int height =(  QApplication::desktop()->height()-100)/ 4;
+  const int height =(  QApplication::desktop()->height()-100)/ 2;
   
-  ui->setupUi(this);
+  m_ui->setupUi(this);
   setGeometry(400, 250, width, height);
 
-  setupTimeSeriesPlot(ui->customPlot);
+  setupTimeSeriesPlot(m_ui->customPlot);
   statusBar()->clearMessage();
 
   move(0, 10);
-  ui->customPlot->replot();
+  m_ui->customPlot->replot();
 
 }
 
 void MainWindow::setupTimeSeriesPlot(QCustomPlot *customPlot)
 {
-#if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
-  QMessageBox::critical(this, "", "You're using Qt < 4.7, the realtime data demo needs functions that are available with Qt 4.7 to work properly");
-#endif
-
   customPlot->addGraph(); // blue line
   customPlot->graph(0)->setPen(QPen(Qt::blue));
   customPlot->addGraph(); // red line
@@ -55,91 +52,119 @@ void MainWindow::setupTimeSeriesPlot(QCustomPlot *customPlot)
   customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
   customPlot->xAxis->setDateTimeFormat("hh:mm:ss");
   customPlot->xAxis->setAutoTickStep(false);
-  customPlot->xAxis->setTickStep(iTickStep);
+  customPlot->xAxis->setTickStep(m_iTickStep);
   customPlot->axisRect()->setupFullAxesBox();
 
   // make left and bottom axes transfer their ranges to right and top axes:
   connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
   connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
 
-  connect(&dataTimer, SIGNAL(timeout()), this, SLOT(timeSeriesFeederSlot()));
-  dataTimer.start(0); 
+  connect(&m_dataTimer, SIGNAL(timeout()), this, SLOT(timeSeriesFeederSlot()));
+  m_dataTimer.start(0); 
 
 }
 
 void MainWindow::timeSeriesFeederSlot()
 {
-  // calculate two new data points:
-#if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
-  double key = 0;
-#else
-  double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
-#endif
-  static double lastPointKey = 0;
-   if (key-lastPointKey > 0.01 && procId >= 0) // at most add point every 10 ms
-  {
-    double value0 = 0.0;
-    double value1 = 0.0;
-    
-    std::vector<std::shared_ptr<ProcessInfo>> lData = observer->data()->getLProcesses();
-    value0 = lData[procId]->memory_vms_info;
-    value1 = value0-tmpValue;
+	// calculate two new data points:
+	double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+	
+	static double lastPointKey = 0;
+	// at most add point every 100 ms
+	if (key-lastPointKey > 0.1 && m_procId >= 0) 
+	{
+		double value0 = 0.0;
+		double value1 = 0.0;
 
-    ui->customPlot->graph(0)->addData(key, value0);
-    ui->customPlot->graph(0)->removeDataBefore(key-iWindowStep);
-    ui->customPlot->graph(0)->rescaleValueAxis();
-    
-    ui->customPlot->graph(1)->addData(key, value1);
-    ui->customPlot->graph(1)->removeDataBefore(key-iWindowStep);
-    ui->customPlot->graph(1)->rescaleValueAxis(true);
+		std::vector<std::shared_ptr<ProcessInfo>> lData = m_observer->data()->getLProcesses();
+		
+		switch(m_plotType)
+		{
+			case kMemory:
+				value0 = lData[m_procId]->memory_vms_info;
+				break;
+			case kCPU:
+				value0 = lData[m_procId]->cpu_percent;
+				break;
+			default: 
+				value0 = 0;
+		}
+		value1 = value0-m_tmpValue;
 
-    // Dot starting to plot
-//     ui->customPlot->graph(2)->clearData();
-//     ui->customPlot->graph(2)->addData(key, value0);
+		m_ui->customPlot->graph(0)->addData(key, value0);
+		m_ui->customPlot->graph(0)->removeDataBefore(key-m_iWindowStep);
+		m_ui->customPlot->graph(0)->rescaleValueAxis();
 
-//     ui->customPlot->graph(3)->clearData();
-//     ui->customPlot->graph(3)->addData(key, value1);
-    lastPointKey = key;
+		m_ui->customPlot->graph(1)->addData(key, value1);
+		m_ui->customPlot->graph(1)->removeDataBefore(key-m_iWindowStep);
+		m_ui->customPlot->graph(1)->rescaleValueAxis(true);
 
-    tmpValue = value0;
-  }
-  // make key axis range scroll with the data (at a constant range size of 8):
-  ui->customPlot->xAxis->setRange(key+0.25, iWindowStep, Qt::AlignRight);
-  ui->customPlot->replot();
+		// Dot starting to plot
+		m_ui->customPlot->graph(2)->clearData();
+		m_ui->customPlot->graph(2)->addData(key, value0);
 
-  // calculate frames per second:
-  static double lastFpsKey;
-  static int frameCount;
-  ++frameCount;
-  
-  if (key-lastFpsKey > 1) // average fps over 1 second(s)
-  {
-    double waitingTime = observer->waiting_time();
-    
-    QString status_message = QString("%1 FPS, Total Data points: %2")
-          .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-          .arg(ui->customPlot->graph(0)->data()->count()+ui->customPlot->graph(1)->data()->count());
-    status_message += QString("                                                        ");
-    status_message += QString("Time since last message: %1 s")
-          .arg( QString::number( waitingTime/ 1000000, 'f', 2 ) );
-	  
-    lastFpsKey = key;
-    frameCount = 0;
-    ui->statusBar->showMessage(status_message, 0);
-  }
+		m_ui->customPlot->graph(3)->clearData();
+		m_ui->customPlot->graph(3)->addData(key, value1);
+
+		m_tmpValue = value0;
+		lastPointKey = key;
+			
+	}
+	// make key axis range scroll with the data (at a constant range size of 8):
+	m_ui->customPlot->xAxis->setRange(key+0.25, m_iWindowStep, Qt::AlignRight);
+	m_ui->customPlot->replot();
+
+	// calculate frames per second:
+	static double lastFpsKey;
+	static int frameCount;
+	++frameCount;
+
+	if (key-lastFpsKey > 1) // average fps over 1 second(s)
+	{
+		double waitingTime = m_observer->waiting_time();
+
+		QString status_message = QString("%1 FPS, Total Data points: %2")
+				.arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
+				.arg(m_ui->customPlot->graph(0)->data()->count()+m_ui->customPlot->graph(1)->data()->count());
+		status_message += QString("                                                                    ");
+		status_message += QString("Time since last message: %1 s")
+				.arg( QString::number( waitingTime/ 1000000, 'f', 2 ) );
+			
+		lastFpsKey = key;
+		frameCount = 0;
+		m_ui->statusBar->showMessage(status_message, 0);
+	}
 }
 
-void MainWindow::setupObserver( std::shared_ptr<RemoteDataFeeder> & obs, int id )
+void MainWindow::setupObserver( std::shared_ptr<RemoteDataFeeder> & obs, 
+								int id,
+								PlotType plotType
+  							)
 {
-  cout << " + Assigning process information: ["<< id <<"]"<<endl;
-  observer = obs;
-  procId = id;
-  windowProcessName = observer->getData()->getProcess(id)->name.c_str();
+  m_observer = obs;
+  m_procId = id;
+  m_plotType = plotType;
+  m_windowProcessName = m_observer->data()->getProcess(id)->name.c_str();
+  cout << "   + Assigning process information: ["<< m_procId <<", "<<m_plotType <<"]"<<endl;
   
-  setWindowTitle(windowProcessName + " Virtual Memory");
+  // Setting label of window name
+  std::string windowTitle("");
+  switch(m_plotType)
+  {
+	  case kMemory:
+		  windowTitle = "total memory";
+		  m_ui->customPlot->setYAxisUnits(QCPAxis::LabelType::ltBytes);
+		  break;
+	  case kCPU:
+		  windowTitle = "CPU usage";
+		  m_ui->customPlot->setYAxisUnits(QCPAxis::LabelType::ltNumber);
+		  break;
+	  default: break;
+  }
+  setWindowTitle(m_windowProcessName + ": "+windowTitle.c_str() );
 }
  
 MainWindow::~MainWindow()
 {
-  delete ui;
+  delete m_ui;
 }

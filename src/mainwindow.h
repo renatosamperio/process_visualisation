@@ -19,6 +19,14 @@
 #include "data_structs.h"
 #include "remotedatafeeder.h"
 
+enum PlotType 
+{ 
+	kMemory,
+	kCPU,
+	kMaxPlotTypes,
+	kNone=-1
+};
+
 namespace Ui {
 class MainWindow;
 }
@@ -32,30 +40,28 @@ public:
   ~MainWindow();
 
   void setupTimeSeriesPlot(QCustomPlot *customPlot);
-  void setupPlayground(QCustomPlot *customPlot);
-  void setupObserver(std::shared_ptr<RemoteDataFeeder> &, int id);
+  void setupObserver(std::shared_ptr<RemoteDataFeeder> &, int, PlotType);
 
 
 private slots:
   void timeSeriesFeederSlot();
 
 private:
-  Ui::MainWindow *ui;
-  QString windowProcessName;
-  QTimer dataTimer;
-  QCPItemTracer *itemDemoPhaseTracer;
-  int procId;
+  Ui::MainWindow *	m_ui;
+  QString 			m_windowProcessName;
+  QTimer 			m_dataTimer;
+  int 				m_procId;
 
-  void *m_zcontext;
-  void *m_zsocket;
-  double tmpValue;
+  void *			m_zcontext;
+  void *			m_zsocket;
+  double 			m_tmpValue;
 
-  int iTickStep;
-  int iWindowStep;
+  int 				m_iTickStep;
+  int 				m_iWindowStep;
 
-  std::shared_ptr<RemoteDataFeeder> observer;
+  std::shared_ptr<RemoteDataFeeder> m_observer;
   
-  int iPlotSize;
+  PlotType		m_plotType;
 
 };
 

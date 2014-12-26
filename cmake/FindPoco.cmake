@@ -8,27 +8,7 @@
 #  Poco_LIBRARIES - All libraries
 
 # ----------------------------------------------------------------------------
-# If you have installed Poco in a non-standard location.
-# Then you have three options. 
-# In the following comments, it is assumed that <Your Path>
-# points to the root directory of the include directory of Poco. e.g
-# If you have put poco in C:\development\Poco then <Your Path> is
-# "C:/development/Poco" and in this directory there will be two
-# directories called "include" and "lib".
-# 1) After CMake runs, set Poco_INCLUDE_DIR to <Your Path>/poco<-version>
-# 2) Use CMAKE_INCLUDE_PATH to set a path to <Your Path>/poco<-version>. This will allow FIND_PATH()
-#    to locate Poco_INCLUDE_DIR by utilizing the PATH_SUFFIXES option. e.g.
-#    SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "<Your Path>/include")
-# 3) Set an environment variable called ${POCO_ROOT} that points to the root of where you have
-#    installed Poco, e.g. <Your Path>. It is assumed that there is at least a subdirectory called
-#    Foundation/include/Poco in this path.
-#
-# Note:
-#  1) If you are just using the poco headers, then you do not need to use
-#     Poco_LIBRARY_DIRS in your CMakeLists.txt file.
-#  2) If Poco has not been installed, then when setting Poco_LIBRARY_DIRS
-#     the script will look for /lib first and, if this fails, then for /stage/lib.
-#
+
 # Usage:
 # In your CMakeLists.txt file do something like this:
 # ...
@@ -118,13 +98,30 @@ IF(Poco_INCLUDE_DIR)
 
   set( Poco_LIBRARIES "") #reset
   IF ( NOT Poco_LIBRARIES )
-    FIND_LIBRARY(Poco_LIBRARY_Zip NAMES PocoZip PocoZipd PATH_SUFFIXES ${SUFFIX_FOR_LIBRARY_PATH} PATHS
-      # Look in other places.
-      ${Poco_INCLUDE_DIR}
-      ${POCO_DIR_SEARCH}
-      # Help the user find it if we cannot.
-      DOC "The ${POCO_LIBRARY_PATH_DESCRIPTION}"
-    )
+#   FIND_LIBRARY(Poco_LIBRARY_Library NAMES PocoLibrary PocoLibraryd PATH_SUFFIXES ${SUFFIX_FOR_LIBRARY_PATH} PATHS
+#       # Look in other places.
+#       ${Poco_INCLUDE_DIR}
+#       ${POCO_DIR_SEARCH}
+#       # Help the user find it if we cannot.
+#       DOC "The ${POCO_LIBRARY_PATH_DESCRIPTION}"
+#     )
+# set( Poco_LIBRARIES ...;${Poco_LIBRARY_Library}
+#     FIND_LIBRARY(Poco_LIBRARY_Zip NAMES PocoZip PocoZipd PATH_SUFFIXES ${SUFFIX_FOR_LIBRARY_PATH} PATHS
+#       # Look in other places.
+#       ${Poco_INCLUDE_DIR}
+#       ${POCO_DIR_SEARCH}
+#       # Help the user find it if we cannot.
+#       DOC "The ${POCO_LIBRARY_PATH_DESCRIPTION}"
+#     )
+# set( Poco_LIBRARIES ...;${Poco_LIBRARY_Zip}
+#   FIND_LIBRARY(Poco_LIBRARY_Util NAMES PocoUtil PocoUtild PATH_SUFFIXES ${SUFFIX_FOR_LIBRARY_PATH} PATHS
+#       # Look in other places.
+#       ${Poco_INCLUDE_DIR}
+#       ${POCO_DIR_SEARCH}
+#       # Help the user find it if we cannot.
+#       DOC "The ${POCO_LIBRARY_PATH_DESCRIPTION}"
+#     )
+# set( Poco_LIBRARIES ...;${Poco_LIBRARY_Util}
   FIND_LIBRARY(Poco_LIBRARY_Found NAMES PocoFoundation PocoFoundationd PATH_SUFFIXES ${SUFFIX_FOR_LIBRARY_PATH} PATHS
       # Look in other places.
       ${Poco_INCLUDE_DIR}
@@ -132,7 +129,7 @@ IF(Poco_INCLUDE_DIR)
       # Help the user find it if we cannot.
       DOC "The ${POCO_LIBRARY_PATH_DESCRIPTION}"
     )
-  set( Poco_LIBRARIES     "${Poco_LIBRARY_Found};${Poco_LIBRARY_Zip}" CACHE FILEPATH "Poco libraries names" FORCE )
+  set( Poco_LIBRARIES     "${Poco_LIBRARY_Found}" CACHE FILEPATH "Poco libraries names" FORCE )
 
   endif()
 

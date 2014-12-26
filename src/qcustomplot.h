@@ -1529,6 +1529,7 @@ public:
   Qt::KeyboardModifier multiSelectModifier() const { return mMultiSelectModifier; }
 
   // setters:
+  void setYAxisUnits(QCPAxis::LabelType type);
   void setViewport(const QRect &rect);
   void setBackground(const QPixmap &pm);
   void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
