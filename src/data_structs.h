@@ -33,6 +33,7 @@ class ProcessInfo{
     long memory_vms_info;
     long memory_rss_info;
     int nice;
+    int pid;
 
 };
 

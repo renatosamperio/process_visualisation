@@ -25,6 +25,7 @@ ProcessInfo::ProcessInfo(){
   memory_vms_info   = -1;
   memory_rss_info   = -1;
   nice              = INT_MIN;
+  pid               = INT_MIN;
   cpu_percent       = -DBL_MAX;
   memory_percent    = -DBL_MAX;
 }
@@ -63,6 +64,8 @@ void ListProcessInfo::decapsulate(std::string &message){
 // std::cout << "---    memory_rss_info:\t\t" << pData->memory_rss_info << std::endl;
     pData->nice              = child.second.get<int>("nice");
 // std::cout << "---    nice:\t\t\t" << pData->nice << std::endl;
+    pData->pid  			 = child.second.get<int>("pid");
+// std::cout << "---    pid:\t" << pData->pid << std::endl;
 
     pData->cpu_percent       = child.second.get<double>("cpu_percent");
 // std::cout << "---    cpu_percent:\t\t" << pData->cpu_percent << std::endl;
@@ -107,6 +110,8 @@ void ListProcessInfo::decapsulate(std::string &message, int id){
 // std::cout << "---    memory_rss_info:\t\t" << pData->memory_rss_info << std::endl;
     pData->nice              = child.second.get<int>("nice");
 // std::cout << "---    nice:\t\t\t" << pData->nice << std::endl;
+    pData->pid  			 = child.second.get<int>("pid");
+// std::cout << "---    pid:\t" << pData->pid << std::endl;
 
     pData->cpu_percent       = child.second.get<double>("cpu_percent");
 // std::cout << "---    cpu_percent:\t\t" << pData->cpu_percent << std::endl;
