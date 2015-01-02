@@ -36,7 +36,7 @@ def poll(interval, process_name):
     procs_status = {}
     for p in psutil.process_iter():
       try:
-        p.dict = p.as_dict(['name','username', 'nice', 'memory_info',
+        p.dict = p.as_dict(['pid', 'name','username', 'nice', 'memory_info',
                             'memory_percent', 'cpu_percent',
                             'cpu_times', 'name', 'status'])
         try:
@@ -55,7 +55,7 @@ def poll(interval, process_name):
     return (processes, procs_status)
 
 def get_process_data_dict(name=''):
-  return {'username': '', 'status': '', 'cpu_times': -1, \
+  return {'pid':-1, 'username': '', 'status': '', 'cpu_times': -1, \
           'name': name, 'cpu_percent': -1.0, 'memory_percent': -1.0, \
           'memory_rss_info': 0, 'memory_rss_label': '',
           'memory_vms_info': 0, 'memory_vms_label': -1, 'nice': -1}
@@ -83,6 +83,7 @@ def get_populated_data_dict(p):
   else:
       data['username'] =''
 #      username = ""
+  data['pid'] = p.dict['pid']
   data['status'] = p.dict['status']
   data['name'] = p.dict['name']
   data['nice'] = p.dict['nice']
