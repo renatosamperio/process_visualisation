@@ -16,6 +16,7 @@ extern "C" {
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <math.h>
 
 #ifdef __cplusplus
 }
@@ -49,23 +50,33 @@ public:
   
   bool isReceivingData();
 
-  std::shared_ptr<ListProcessInfo> data();
+  std::shared_ptr<ListProcessInfo> data(){ return lProcesses;}
   
   inline double waiting_time(){ return waitingTime; }
+  inline double is_time_outlier(){ return isTimeOutlier;}
+  inline double elapsed_time() {return last_message_timer.elapsed();}
 
+  bool m_hasStarted;
 private:
   void *m_zcontext;
   void *m_zsocket;
   
-  bool m_hasStarted;
   bool bLoopCtrl;
-  Poco::Mutex lock_;
   
   Poco::Stopwatch last_message_timer;
   double waitingTime;
   Poco::Event _event;
 
   std::shared_ptr<ListProcessInfo> lProcesses;
+  
+  double		m_total;
+  double 		m_sum;
+  double		m_mean; 
+  double		m_variance;
+  double		m_stdev;
+  double		m_sq_sum;
+  
+  bool 			isTimeOutlier;
 };
 
 #endif // _REMOTEDATAFEEDER_H_

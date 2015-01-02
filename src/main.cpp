@@ -21,7 +21,7 @@ namespace
 typedef enum {
 	plot_mem 	= 0x01,
 	plot_cpu	= 0x02,
-	plot_max	= 3
+	plot_max	= 0x02
 } item_validator;
 
 
@@ -55,13 +55,12 @@ class GUIinThread : public Poco::Runnable
 
       // Setting up time series plotter with new incoming data feeds
       int processSize = m_dataObserver->data()->getProcessSize();
-	  cout << " - Monitoring "<< processSize << " process(es) "<<endl; 
+// 	  std::cout << " - Monitoring "<< processSize << " process(es) "<<endl; 
 	  
 	  // Setting up step value
 	  int step = 0;
 	  int plot_options = m_plotOtions;
-	  int plot_value	= 0x02;
-	  
+	  int plot_value	= plot_max;	//MAX PLOT VALUE
 	  while (plot_options > 0)
 	  {
 		  if (plot_options & plot_value){
@@ -161,7 +160,6 @@ int main(int argc, char *argv[])
 		return ERROR_UNHANDLED_EXCEPTION; 
 	} 
     
-	// "tcp://127.0.0.1:5563";
 	std::shared_ptr<RemoteDataFeeder> dataObserver( new RemoteDataFeeder(endpoint) );
 	  
 	GUIinThread timeseries(dataObserver, plotOtions);	

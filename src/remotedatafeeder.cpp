@@ -4,7 +4,14 @@ RemoteDataFeeder::RemoteDataFeeder(std::string endPoint):
   m_hasStarted(false),
   lProcesses(new ListProcessInfo),
   bLoopCtrl(true),
-  waitingTime(0.0)
+  waitingTime(0.0),
+  m_total(0.0),
+  m_sum(0.0),
+  m_mean(0.0),
+  m_variance(0.0),
+  m_stdev(0.0),
+  m_sq_sum(0.0),
+  isTimeOutlier(false)
 {
   // Preparing ZMQ subscriber
   int iResult = 0;
@@ -53,9 +60,7 @@ void RemoteDataFeeder::run()
 		// Parsing incoming message 
 		try
 		{
-			lock_.lock();
 			lProcesses->decapsulate(message_content);
-			lock_.unlock();
 		}
 		catch(const boost::property_tree::ptree_bad_data &e)
 		{
@@ -72,19 +77,43 @@ void RemoteDataFeeder::run()
 			m_hasStarted = false;
 			cout << "-- -- -- -- Ptree Error: " << e.what() << endl;
 		}
-      
-		lock_.lock();
 		m_hasStarted = true;
 		waitingTime = last_message_timer.elapsed();
+		
+		// Statistics
+		if (waitingTime>0)
+		{
+			m_total++;
+			m_sum 		+= waitingTime;
+			m_sq_sum 	+= (waitingTime*waitingTime);
+			
+			m_mean 		 = m_sum / m_total;	
+			m_variance 	 = m_sq_sum/m_total - m_mean*m_mean;
+			m_stdev 	 = sqrt(m_variance);
+			
+			isTimeOutlier = waitingTime>(m_mean+3*m_stdev);
+ 			/*
+			cout << setiosflags(ios::fixed)
+					<< setprecision(0)
+					<< m_total << ", "
+ 					<< setprecision(3) 
+					<< waitingTime << ", "
+					<< m_mean << ", "
+					<< m_sq_sum << ", "
+					<< m_variance << ", "	// population variance
+					<< m_stdev << " : "
+					<< isTimeOutlier << endl;
+			*/
+			
+		}
+		
+		// Resetting time
 		last_message_timer.restart();
-		lock_.unlock();
     }
     else
 	{
-		lock_.lock();
 		m_hasStarted = false;
 		waitingTime = std::max(waitingTime, static_cast<double>(last_message_timer.elapsed()) );
-		lock_.unlock();
 	}
     _event.tryWait(100);
   }
@@ -92,17 +121,8 @@ void RemoteDataFeeder::run()
 
 bool RemoteDataFeeder::isReceivingData()
 {
-  lock_.lock();
   bool reply = m_hasStarted;
-  lock_.unlock();
   return reply;
 }
 
-std::shared_ptr<ListProcessInfo> RemoteDataFeeder::data()
-{ 
-  lock_.lock();
-  std::shared_ptr<ListProcessInfo> refProcesses = lProcesses;
-  lock_.unlock();
-  return refProcesses;
-}
 

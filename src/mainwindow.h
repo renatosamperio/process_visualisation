@@ -27,6 +27,28 @@ enum PlotType
 	kNone=-1
 };
 
+enum PlotId
+{
+	kTimeSeries=0,
+	k1stDerivative,
+	kTimeSeriesDot,
+	k1stDerivativeDot,
+	kMaxPlotIds,
+	kNonePlotId=-1	
+};
+
+class PlotIndex
+{
+public:
+	PlotIndex();
+	void setIndex(int plotId, int indexValue);
+	int getIndex(int plotId);
+	int getNextIndex();
+	std::string getIndexName(int plotId);
+private:
+	std::vector<int> indexes;
+};
+
 namespace Ui {
 class MainWindow;
 }
@@ -41,14 +63,14 @@ public:
 
   void setupTimeSeriesPlot(QCustomPlot *customPlot);
   void setupObserver(std::shared_ptr<RemoteDataFeeder> &, int, PlotType);
+  void setupWindowTitle();
 
-
+  void addNewPlot(int plotId, Qt::GlobalColor plotColour, double value, int key);
 private slots:
   void timeSeriesFeederSlot();
 
 private:
   Ui::MainWindow *	m_ui;
-  QString 			m_windowProcessName;
   QTimer 			m_dataTimer;
   int 				m_procId;
 
@@ -61,8 +83,12 @@ private:
 
   std::shared_ptr<RemoteDataFeeder> m_observer;
   
-  PlotType		m_plotType;
+  PlotType			m_plotType;
+  PlotIndex			m_plotsIndexes;
 
+  bool 				m_was_delayed;
+  double 			m_last_invalid_key;
+  double 			m_last_valid_key;
 };
 
 #endif // MAINWINDOW_H

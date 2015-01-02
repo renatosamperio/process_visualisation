@@ -38,6 +38,7 @@ void ListProcessInfo::decapsulate(std::string &message){
   std::stringstream ss(message);
   bpt::ptree pt;
   bpt::read_json(ss, pt);
+  lock_.lock();
   lProcesses.clear();
 
 //  std::cout << "--- message  [" << strip(message)<<"]"<<std::endl;
@@ -72,6 +73,7 @@ void ListProcessInfo::decapsulate(std::string &message){
     lProcesses.push_back (  std::move(pData) );
   }
   processSize = lProcesses.size();
+  lock_.unlock();
 //  cout << "  *** processSize: " << processSize << endl;
 }
 
@@ -80,6 +82,7 @@ void ListProcessInfo::decapsulate(std::string &message, int id){
   std::stringstream ss(message);
   bpt::ptree pt;
   bpt::read_json(ss, pt);
+  lock_.lock();
   lProcesses.clear();
 
 //  std::cout << "--- message ("<< id << ") [" << strip(message)<<"]"<<std::endl;
@@ -114,7 +117,15 @@ void ListProcessInfo::decapsulate(std::string &message, int id){
     lProcesses.push_back (  std::move(pData) );
   }
   processSize = lProcesses.size();
+  lock_.unlock();
 //  cout << "  *** processSize: " << processSize << endl;
+}
+
+std::shared_ptr<ProcessInfo> ListProcessInfo::getProcess(int id){
+	lock_.lock();
+	shared_ptr<ProcessInfo> reference = lProcesses[id];
+	lock_.unlock();
+	return reference;
 }
 
 std::string strip(const std::string &s, const std::string &chars) {

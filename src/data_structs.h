@@ -16,6 +16,8 @@
 #include "zhelpers.h"
 #include "qcustomplot.h"
 
+#include "Poco/Thread.h"
+
 class ProcessInfo{
   public:
     ProcessInfo();
@@ -39,15 +41,14 @@ class ListProcessInfo{
     ListProcessInfo();
     void decapsulate(std::string &message);
     void decapsulate(std::string &message, int i);
+    std::shared_ptr<ProcessInfo> getProcess(int id);
 
     inline int getProcessSize(){return processSize;}
-    inline std::vector<std::shared_ptr<ProcessInfo> > getLProcesses()
-      {
-	return lProcesses;
-      };
-    inline std::shared_ptr<ProcessInfo> getProcess(int id){return lProcesses[id];}
+    inline std::vector<std::shared_ptr<ProcessInfo> > getLProcesses(){ return lProcesses; }
+	
 private:
     int processSize;
+	Poco::Mutex lock_;
     std::vector< std::shared_ptr<ProcessInfo> > lProcesses;
 };
 
